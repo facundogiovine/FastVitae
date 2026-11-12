@@ -1,0 +1,55 @@
+<Window x:Class="FastVitae.Views.HomeWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="FastVitae" Width="760" Height="520" MinWidth="560" MinHeight="320"
+        WindowStartupLocation="CenterScreen">
+    <DockPanel Margin="16">
+        <DockPanel DockPanel.Dock="Top" Margin="0,0,0,12">
+            <StackPanel Orientation="Horizontal" DockPanel.Dock="Right">
+                <Button Content="Fields" Click="Fields_Click" ToolTip="Saved content per kind of job, to start new CVs from"/>
+                <Button Content="Profile" Click="Profile_Click" ToolTip="Edit your basic info"/>
+                <Button x:Name="ProfilesButton" Content="Profiles ▾" Margin="0" Click="Profiles_Click" ToolTip="Switch, add or delete profiles"/>
+            </StackPanel>
+            <Button Content="New CV" Style="{StaticResource Primary}" HorizontalAlignment="Left" Click="NewCv_Click"/>
+        </DockPanel>
+
+        <StackPanel Orientation="Horizontal" DockPanel.Dock="Bottom" Margin="0,12,0,0">
+            <Button Content="Open" Click="Open_Click"/>
+            <Button Content="Open folder" Click="OpenFolder_Click"/>
+        </StackPanel>
+
+        <Grid>
+            <ListView x:Name="CvList" MouseDoubleClick="Open_Click">
+                <ListView.GroupStyle>
+                    <GroupStyle>
+                        <GroupStyle.HeaderTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Name}" FontWeight="Bold" Margin="4,10,0,2"/>
+                            </DataTemplate>
+                        </GroupStyle.HeaderTemplate>
+                    </GroupStyle>
+                </ListView.GroupStyle>
+                <ListView.View>
+                    <GridView>
+                        <GridViewColumn Header="Role" Width="320" DisplayMemberBinding="{Binding Role}"/>
+                        <GridViewColumn Header="Last edit" Width="150" DisplayMemberBinding="{Binding LastEdit, StringFormat='{}{0:yyyy-MM-dd HH:mm}'}"/>
+                        <GridViewColumn Header="" Width="220">
+                            <GridViewColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock x:Name="Warning" Text="This file could not be read" Foreground="#B00020" Visibility="Collapsed"/>
+                                    <DataTemplate.Triggers>
+                                        <DataTrigger Binding="{Binding Unreadable}" Value="True">
+                                            <Setter TargetName="Warning" Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                    </DataTemplate.Triggers>
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
+                        </GridViewColumn>
+                    </GridView>
+                </ListView.View>
+            </ListView>
+            <TextBlock x:Name="EmptyText" Text="No CVs yet. Click New CV to make the first one."
+                       Foreground="#777777" HorizontalAlignment="Center" VerticalAlignment="Center" IsHitTestVisible="False"/>
+        </Grid>
+    </DockPanel>
+</Window>

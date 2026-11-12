@@ -1,0 +1,20 @@
+<Window x:Class="FastVitae.Views.SaveToSpecialtyWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Save to Specialty" Width="420" SizeToContent="Height"
+        WindowStartupLocation="CenterOwner" ResizeMode="NoResize" ShowInTaskbar="False">
+    <StackPanel Margin="20">
+        <TextBlock Text="Field" Style="{StaticResource Label}" Margin="0,0,0,2"/>
+        <ComboBox x:Name="FieldCombo" IsEditable="True" LostFocus="FieldCombo_LostFocus" SelectionChanged="FieldCombo_SelectionChanged"
+                  ToolTip="Pick a Field or type a new one, for example: Programming"/>
+
+        <TextBlock Text="Specialty" Style="{StaticResource Label}"/>
+        <ComboBox x:Name="SpecialtyCombo" IsEditable="True"
+                  ToolTip="Pick a Specialty or type a new one, for example: C#"/>
+
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,20,0,0">
+            <Button Content="Cancel" IsCancel="True"/>
+            <Button Content="Save" IsDefault="True" Style="{StaticResource Primary}" Margin="0" Click="Save_Click"/>
+        </StackPanel>
+    </StackPanel>
+</Window>

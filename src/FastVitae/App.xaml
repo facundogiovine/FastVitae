@@ -1,0 +1,56 @@
+﻿<Application x:Class="FastVitae.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:model="clr-namespace:FastVitae.Model">
+    <Application.Resources>
+        <!-- Shared styles -->
+        <Style TargetType="Button">
+            <Setter Property="Padding" Value="12,5"/>
+            <Setter Property="Margin" Value="0,0,6,0"/>
+        </Style>
+        <Style TargetType="TextBox">
+            <Setter Property="Padding" Value="4,3"/>
+        </Style>
+        <Style x:Key="Label" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="#555555"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Margin" Value="0,8,0,2"/>
+        </Style>
+        <!-- Country code dropdown -->
+        <DataTemplate x:Key="CountryTemplate">
+            <StackPanel Orientation="Horizontal">
+                <Image Source="{Binding Flag}" Width="16" Height="11" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                <TextBlock x:Name="NameText" Text="{Binding Name}" Margin="0,0,8,0"/>
+                <TextBlock Text="{Binding DialCode}"/>
+            </StackPanel>
+            <DataTemplate.Triggers>
+                <!-- Closed box hides the name -->
+                <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=ComboBoxItem}}" Value="{x:Null}">
+                    <Setter TargetName="NameText" Property="Visibility" Value="Collapsed"/>
+                </DataTrigger>
+            </DataTemplate.Triggers>
+        </DataTemplate>
+        <Style x:Key="CountryCombo" TargetType="ComboBox">
+            <Setter Property="ItemsSource" Value="{x:Static model:Country.All}"/>
+            <Setter Property="ItemTemplate" Value="{StaticResource CountryTemplate}"/>
+            <Setter Property="SelectedValuePath" Value="Iso"/>
+            <Setter Property="TextSearch.TextPath" Value="Name"/>
+            <Setter Property="MaxDropDownHeight" Value="320"/>
+            <!-- Fits the longest code -->
+            <Setter Property="Width" Value="96"/>
+        </Style>
+        <!-- Main button -->
+        <Style x:Key="Primary" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+            <Setter Property="Background" Value="#1F5FBF"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="BorderBrush" Value="#1F5FBF"/>
+        </Style>
+        <!-- Small form button -->
+        <Style x:Key="Small" TargetType="Button">
+            <Setter Property="Padding" Value="6,1"/>
+            <Setter Property="Margin" Value="4,0,0,0"/>
+            <Setter Property="MinWidth" Value="24"/>
+        </Style>
+    </Application.Resources>
+</Application>
