@@ -6,6 +6,10 @@ A portable Windows app for making a tailored CV for each job application, fast.
 
 You fill in a form on the left and see the finished CV on the right. FastVitae does all the formatting and writes a PDF and a Word file.
 
+## Download
+
+Get `FastVitae.exe` from the [latest release](https://github.com/facundogiovine/FastVitae/releases/latest), put it in any folder and run it. There is nothing to install.
+
 ## Features
 
 - One CV per company and role, saved in a folder named after the company.
@@ -54,7 +58,7 @@ Data\
 
 ## License
 
-All rights reserved. The source is public for viewing only. See `LICENSE`.
+All rights reserved. The app is free to download and use. The source is public for viewing only. See `LICENSE`.
 
 ## Third-party
 
