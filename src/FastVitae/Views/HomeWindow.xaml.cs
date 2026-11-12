@@ -24,7 +24,7 @@ public partial class HomeWindow : Window
 
     private void Refresh()
     {
-        Title = "FastVitae - " + profile;
+        Title = "Fast Vitae -" + profile;
         var items = store.ListCvs(profile);
         var view = new ListCollectionView(items);
         view.GroupDescriptions.Add(new PropertyGroupDescription(nameof(CvListItem.Company)));
@@ -50,7 +50,7 @@ public partial class HomeWindow : Window
             return;
         if (item.Unreadable)
         {
-            MessageBox.Show(this, "This file could not be read, so it was left untouched:\n" + item.Path, "FastVitae");
+            MessageBox.Show(this, "This file could not be read, so it was left untouched:\n" + item.Path, "Fast Vitae");
             return;
         }
 
@@ -79,7 +79,7 @@ public partial class HomeWindow : Window
         var dialog = new SetupWindow(info, dataFolder: null, currentPicture: store.PicturePath(profile))
         {
             Owner = this,
-            Title = "FastVitae - Profile"
+            Title = "Fast Vitae -Profile"
         };
         if (dialog.ShowDialog() != true)
             return;
@@ -92,7 +92,7 @@ public partial class HomeWindow : Window
             {
                 if (store.ListProfiles().Contains(newName, StringComparer.OrdinalIgnoreCase))
                 {
-                    MessageBox.Show(this, $"There is already a profile called {newName}.", "FastVitae");
+                    MessageBox.Show(this, $"There is already a profile called {newName}.", "Fast Vitae");
                     return;
                 }
                 store.RenameProfile(profile, newName);
@@ -103,7 +103,7 @@ public partial class HomeWindow : Window
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
-            MessageBox.Show(this, "The profile could not be saved: " + ex.Message, "FastVitae");
+            MessageBox.Show(this, "The profile could not be saved: " + ex.Message, "Fast Vitae");
         }
         Refresh();
     }
@@ -141,13 +141,13 @@ public partial class HomeWindow : Window
     private void AddProfile()
     {
         var info = new BasicInfo();
-        var dialog = new SetupWindow(info, dataFolder: null) { Owner = this, Title = "FastVitae - New profile" };
+        var dialog = new SetupWindow(info, dataFolder: null) { Owner = this, Title = "Fast Vitae -New profile" };
         if (dialog.ShowDialog() != true)
             return;
 
         if (store.ListProfiles().Contains(NameCleaner.Clean(info.FullName), StringComparer.OrdinalIgnoreCase))
         {
-            MessageBox.Show(this, $"There is already a profile called {info.FullName}.", "FastVitae");
+            MessageBox.Show(this, $"There is already a profile called {info.FullName}.", "Fast Vitae");
             return;
         }
         string added = store.SaveProfile(info);
@@ -160,13 +160,13 @@ public partial class HomeWindow : Window
         var others = store.ListProfiles().Where(name => name != profile).ToList();
         if (others.Count == 0)
         {
-            MessageBox.Show(this, "This is the only profile. Add another one before deleting it.", "FastVitae");
+            MessageBox.Show(this, "This is the only profile. Add another one before deleting it.", "Fast Vitae");
             return;
         }
 
         var answer = MessageBox.Show(this,
             $"Delete the profile {profile} with all its CVs and Fields? This cannot be undone.",
-            "FastVitae", MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No);
+            "Fast Vitae", MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No);
         if (answer != MessageBoxResult.Yes)
             return;
 

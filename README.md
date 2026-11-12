@@ -1,10 +1,10 @@
-<p align="center"><img src="icon.png" width="128" alt="FastVitae icon"></p>
+<p align="center"><img src="icon.png" width="128" alt="Fast Vitae icon"></p>
 
-# FastVitae
+# Fast Vitae
 
 A portable Windows app for making a tailored CV for each job application, fast.
 
-You fill in a form on the left and see the finished CV on the right. FastVitae does all the formatting and writes a PDF and a Word file.
+You fill in a form on the left and see the finished CV on the right. Fast Vitae does all the formatting and writes a PDF and a Word file.
 
 ## Download
 

@@ -37,7 +37,7 @@ public partial class EditorWindow : Window
     public static EditorWindow ForCv(ProfileStore store, string profile, CvDocument doc, string company, string role, bool alreadyCreated)
     {
         var window = new EditorWindow(store, profile, doc) { company = company, role = role };
-        window.Title = $"FastVitae - {company} - {role}";
+        window.Title = $"Fast Vitae -{company} - {role}";
         if (alreadyCreated)
             window.savedJson = window.CurrentJson();
         return window;
@@ -46,7 +46,7 @@ public partial class EditorWindow : Window
     public static EditorWindow ForSpecialty(ProfileStore store, string profile, CvDocument doc, string field, string specialty)
     {
         var window = new EditorWindow(store, profile, doc) { field = field, specialty = specialty };
-        window.Title = $"FastVitae - {field} - {specialty}";
+        window.Title = $"Fast Vitae -{field} - {specialty}";
         window.savedJson = window.CurrentJson();
 
         // Hide the CV-only parts
@@ -237,7 +237,7 @@ public partial class EditorWindow : Window
         {
             MessageBox.Show(this,
                 "The files could not be written. If the PDF or Word file is open in another program, close it and try again.\n\n" + ex.Message,
-                "FastVitae", MessageBoxButton.OK, MessageBoxImage.Warning);
+                "Fast Vitae", MessageBoxButton.OK, MessageBoxImage.Warning);
         }
     }
 
@@ -286,7 +286,7 @@ public partial class EditorWindow : Window
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
-            MessageBox.Show(this, "The Specialty could not be saved: " + ex.Message, "FastVitae");
+            MessageBox.Show(this, "The Specialty could not be saved: " + ex.Message, "Fast Vitae");
         }
     }
 
@@ -298,7 +298,7 @@ public partial class EditorWindow : Window
         string question = IsSpecialty
             ? "Your changes were not saved. Close anyway?"
             : "This CV has changes that were not created. Close anyway?";
-        var answer = MessageBox.Show(this, question, "FastVitae",
+        var answer = MessageBox.Show(this, question, "Fast Vitae",
             MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.No);
         e.Cancel = answer != MessageBoxResult.Yes;
     }

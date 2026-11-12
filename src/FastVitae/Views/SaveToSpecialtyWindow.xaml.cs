@@ -39,7 +39,7 @@ public partial class SaveToSpecialtyWindow : Window
     {
         if (Field == "" || Specialty == "")
         {
-            MessageBox.Show(this, "Please enter a Field and a Specialty.", "FastVitae");
+            MessageBox.Show(this, "Please enter a Field and a Specialty.", "Fast Vitae");
             return;
         }
 
@@ -47,7 +47,7 @@ public partial class SaveToSpecialtyWindow : Window
         {
             var answer = MessageBox.Show(this,
                 $"{Field} - {Specialty} already has saved content. Replace it?",
-                "FastVitae", MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.No);
+                "Fast Vitae", MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.No);
             if (answer != MessageBoxResult.Yes)
                 return;
         }

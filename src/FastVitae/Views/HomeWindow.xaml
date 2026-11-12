@@ -1,7 +1,7 @@
 <Window x:Class="FastVitae.Views.HomeWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="FastVitae" Width="760" Height="520" MinWidth="560" MinHeight="320"
+        Title="Fast Vitae" Width="760" Height="520" MinWidth="560" MinHeight="320"
         WindowStartupLocation="CenterScreen">
     <DockPanel Margin="16">
         <DockPanel DockPanel.Dock="Top" Margin="0,0,0,12">

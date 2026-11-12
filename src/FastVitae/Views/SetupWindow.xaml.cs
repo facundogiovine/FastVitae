@@ -74,7 +74,7 @@ public partial class SetupWindow : Window
         }
         catch (Exception ex) when (ex is NotSupportedException or IOException or UnauthorizedAccessException)
         {
-            MessageBox.Show(this, "That file could not be opened as a picture.", "FastVitae");
+            MessageBox.Show(this, "That file could not be opened as a picture.", "Fast Vitae");
         }
     }
 
@@ -88,7 +88,7 @@ public partial class SetupWindow : Window
 
     private void Browse_Click(object sender, RoutedEventArgs e)
     {
-        var dialog = new OpenFolderDialog { Title = "Folder where FastVitae keeps your data" };
+        var dialog = new OpenFolderDialog { Title = "Folder where Fast Vitae keeps your data" };
         if (dialog.ShowDialog(this) == true)
             FolderBox.Text = dialog.FolderName;
     }
@@ -97,12 +97,12 @@ public partial class SetupWindow : Window
     {
         if (info.FirstName.Trim() == "" || info.LastName.Trim() == "")
         {
-            MessageBox.Show(this, "Please enter your first and last name.", "FastVitae");
+            MessageBox.Show(this, "Please enter your first and last name.", "Fast Vitae");
             return;
         }
         if (FolderPanel.Visibility == Visibility.Visible && DataFolder == "")
         {
-            MessageBox.Show(this, "Please choose a folder for your data.", "FastVitae");
+            MessageBox.Show(this, "Please choose a folder for your data.", "Fast Vitae");
             return;
         }
         DialogResult = true;

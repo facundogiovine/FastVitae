@@ -7,6 +7,9 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
     <ApplicationIcon>FastVitae.ico</ApplicationIcon>
+    <Product>Fast Vitae</Product>
+    <AssemblyTitle>Fast Vitae</AssemblyTitle>
+    <Version>1.0.1</Version>
   </PropertyGroup>
 
   <ItemGroup>

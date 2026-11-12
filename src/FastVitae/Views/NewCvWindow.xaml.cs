@@ -60,13 +60,13 @@ public partial class NewCvWindow : Window
     {
         if (Company == "" || Role == "")
         {
-            MessageBox.Show(this, "Please enter the company and the role.", "FastVitae");
+            MessageBox.Show(this, "Please enter the company and the role.", "Fast Vitae");
             return;
         }
 
         if (store.CvExists(profile, Company, Role))
         {
-            MessageBox.Show(this, "You already have a CV for this company and role. It will be opened.", "FastVitae");
+            MessageBox.Show(this, "You already have a CV for this company and role. It will be opened.", "Fast Vitae");
             Document = store.LoadCv(profile, Company, Role);
             AlreadyExists = true;
         }
@@ -74,7 +74,7 @@ public partial class NewCvWindow : Window
         {
             if (FieldCombo.SelectedItem is not string field || SpecialtyCombo.SelectedItem is not string specialty)
             {
-                MessageBox.Show(this, "Please pick a Field and a Specialty.", "FastVitae");
+                MessageBox.Show(this, "Please pick a Field and a Specialty.", "Fast Vitae");
                 return;
             }
             // Specialty content, profile contact

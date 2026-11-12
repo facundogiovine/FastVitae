@@ -1,7 +1,7 @@
 <Window x:Class="FastVitae.Views.SetupWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="FastVitae - Your details" Width="520" SizeToContent="Height"
+        Title="Fast Vitae - Your details" Width="520" SizeToContent="Height"
         WindowStartupLocation="CenterScreen" ResizeMode="NoResize">
     <StackPanel Margin="20">
         <TextBlock Text="Your basic info" FontSize="18" FontWeight="SemiBold"/>
@@ -65,7 +65,7 @@
             <TextBlock Text="Data folder" Style="{StaticResource Label}"/>
             <DockPanel>
                 <Button Content="Browse..." DockPanel.Dock="Right" Margin="6,0,0,0" Click="Browse_Click"/>
-                <TextBox x:Name="FolderBox" ToolTip="Where FastVitae keeps your profiles and CVs"/>
+                <TextBox x:Name="FolderBox" ToolTip="Where Fast Vitae keeps your profiles and CVs"/>
             </DockPanel>
         </StackPanel>
 

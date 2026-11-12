@@ -18,7 +18,7 @@ public partial class AddSectionWindow : Window
     {
         if (TitleBox.Text.Trim() == "")
         {
-            MessageBox.Show(this, "Please enter a title.", "FastVitae");
+            MessageBox.Show(this, "Please enter a title.", "Fast Vitae");
             return;
         }
 

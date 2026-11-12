@@ -76,7 +76,7 @@ public partial class FieldsWindow : Window
     {
         if (SelectedField == null)
         {
-            MessageBox.Show(this, "Add a Field first.", "FastVitae");
+            MessageBox.Show(this, "Add a Field first.", "Fast Vitae");
             return;
         }
         string? name = PromptWindow.Ask(this, "Add Specialty", "Specialty name");
@@ -84,7 +84,7 @@ public partial class FieldsWindow : Window
             return;
         if (store.SpecialtyExists(profile, SelectedField, name))
         {
-            MessageBox.Show(this, "That Specialty already exists.", "FastVitae");
+            MessageBox.Show(this, "That Specialty already exists.", "Fast Vitae");
             return;
         }
 
@@ -106,7 +106,7 @@ public partial class FieldsWindow : Window
         }
         catch (Exception ex) when (ex is IOException or System.Text.Json.JsonException)
         {
-            MessageBox.Show(this, "This Specialty could not be read, so it was left untouched: " + ex.Message, "FastVitae");
+            MessageBox.Show(this, "This Specialty could not be read, so it was left untouched: " + ex.Message, "Fast Vitae");
             return;
         }
 
@@ -140,7 +140,7 @@ public partial class FieldsWindow : Window
 
     private bool Confirm(string question)
     {
-        return MessageBox.Show(this, question, "FastVitae",
+        return MessageBox.Show(this, question, "Fast Vitae",
             MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No) == MessageBoxResult.Yes;
     }
 
@@ -153,7 +153,7 @@ public partial class FieldsWindow : Window
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
-            MessageBox.Show(this, "That could not be done: " + ex.Message, "FastVitae");
+            MessageBox.Show(this, "That could not be done: " + ex.Message, "Fast Vitae");
         }
     }
 }
