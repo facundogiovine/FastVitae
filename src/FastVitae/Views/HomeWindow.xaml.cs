@@ -24,13 +24,105 @@ public partial class HomeWindow : Window
 
     private void Refresh()
     {
-        Title = "Fast Vitae -" + profile;
+        Title = "Fast Vitae - " + profile;
         var items = store.ListCvs(profile);
         var view = new ListCollectionView(items);
         view.GroupDescriptions.Add(new PropertyGroupDescription(nameof(CvListItem.Company)));
         CvList.ItemsSource = view;
         EmptyText.Visibility = items.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
+        RefreshApplications();
     }
+
+    // ---- Applications tab ----
+
+    private const string AllFields = "All fields";
+    private const string AllStatuses = "All statuses";
+    private List<JobApplication> applications = new();
+    private bool fillingFilters;
+
+    // Reload from the Excel files
+    private void RefreshApplications()
+    {
+        try
+        {
+            applications = new ApplicationStore(store).List(profile);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidDataException)
+        {
+            applications = new List<JobApplication>();
+            MessageBox.Show(this, "The applications could not be read: " + ex.Message, "Fast Vitae");
+        }
+
+        // Keep the chosen filters
+        string field = FieldFilter.SelectedItem as string ?? AllFields;
+        string status = StatusFilter.SelectedItem as string ?? AllStatuses;
+        fillingFilters = true;
+        FieldFilter.ItemsSource = new[] { AllFields }.Concat(applications.Select(a => a.Field).Distinct().OrderBy(f => f)).ToList();
+        FieldFilter.SelectedItem = FieldFilter.Items.Contains(field) ? field : AllFields;
+        StatusFilter.ItemsSource = new[] { AllStatuses }.Concat(ApplicationStatus.All).ToList();
+        StatusFilter.SelectedItem = status;
+        fillingFilters = false;
+
+        ShowApplications();
+    }
+
+    private void Filter_Changed(object sender, SelectionChangedEventArgs e)
+    {
+        if (!fillingFilters)
+            ShowApplications();
+    }
+
+    // Apply the two filters
+    private void ShowApplications()
+    {
+        string field = FieldFilter.SelectedItem as string ?? AllFields;
+        string status = StatusFilter.SelectedItem as string ?? AllStatuses;
+
+        ApplicationList.ItemsSource = applications
+            .Where(a => field == AllFields || a.Field == field)
+            .Where(a => status == AllStatuses || a.Status == status)
+            .ToList();
+        NoApplicationsText.Visibility = applications.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
+    }
+
+    // Save status to the Excel
+    private void Status_Changed(object sender, SelectionChangedEventArgs e)
+    {
+        var combo = (ComboBox)sender;
+        if (combo.DataContext is not JobApplication application || combo.SelectedItem is not string status)
+            return;
+        if (status == application.Status)
+            return;
+
+        try
+        {
+            new ApplicationStore(store).SetStatus(profile, application, status);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            MessageBox.Show(this,
+                "The status could not be saved. If the Excel file is open, close it and try again.\n\n" + ex.Message,
+                "Fast Vitae", MessageBoxButton.OK, MessageBoxImage.Warning);
+        }
+        RefreshApplications();
+    }
+
+    // Open the PDF applied with
+    private void OpenCv_Click(object sender, RoutedEventArgs e)
+    {
+        if (((FrameworkElement)sender).DataContext is not JobApplication application)
+            return;
+
+        string path = Path.Combine(store.ProfileFolder(profile), application.CvPath);
+        if (!File.Exists(path))
+        {
+            MessageBox.Show(this, "The CV file was not found:\n" + path, "Fast Vitae");
+            return;
+        }
+        Process.Start(new ProcessStartInfo(path) { UseShellExecute = true });
+    }
+
+    // ---- CVs tab and toolbar ----
 
     private void NewCv_Click(object sender, RoutedEventArgs e)
     {
@@ -79,7 +171,7 @@ public partial class HomeWindow : Window
         var dialog = new SetupWindow(info, dataFolder: null, currentPicture: store.PicturePath(profile))
         {
             Owner = this,
-            Title = "Fast Vitae -Profile"
+            Title = "Fast Vitae - Profile"
         };
         if (dialog.ShowDialog() != true)
             return;
@@ -141,7 +233,7 @@ public partial class HomeWindow : Window
     private void AddProfile()
     {
         var info = new BasicInfo();
-        var dialog = new SetupWindow(info, dataFolder: null) { Owner = this, Title = "Fast Vitae -New profile" };
+        var dialog = new SetupWindow(info, dataFolder: null) { Owner = this, Title = "Fast Vitae - New profile" };
         if (dialog.ShowDialog() != true)
             return;
 

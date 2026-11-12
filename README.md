@@ -18,6 +18,7 @@ The exe is not code-signed yet, so Windows may show "Windows protected your PC" 
 - Start a CV from scratch, from saved content, or from a CV you already made.
 - **Fields** and **Specialties** (for example Programming, then C#) hold reusable content, so a new application starts pre-filled.
 - Sections in two formats: bullet columns, or name with bullet points. Add, rename, reorder and remove them.
+- **Applications** tab: every CV you create is logged with its Field, company, role and date. Mark each one Applied, In process, Approved or Rejected, filter the list, and open the CV you sent. The list lives in one Excel file per Field, and Excel is not needed to use it.
 - Optional picture header: name and title on the left, picture on the right.
 - Several profiles on one install. No accounts, no sign-up.
 - Works fully offline. No database. Your data is plain JSON files in a folder you choose.
@@ -44,12 +45,15 @@ publish.cmd
 
 ## Where data is stored
 
+By default in `Documents\Fast Vitae`. You can pick another folder on first run.
+
 ```
-Data\
+Fast Vitae\
   Profiles\
     First Last\
       profile.json
       picture.jpg
+      Applications\Programming.xlsx
       Fields\Programming\C#.json
       CVs\Company\Role.json
       CVs\Company\First Last - Role.pdf
@@ -77,4 +81,5 @@ MIT. See `LICENSE`.
 - [STIX Two Text](https://github.com/stipub/stixfonts) fonts, SIL Open Font License 1.1. See `src/FastVitae/Fonts/OFL.txt`.
 - [FamFamFam flag icons](https://www.nuget.org/packages/FamFamFam.Flags.Wpf) by Mark James, public domain.
 - [Open XML SDK](https://github.com/dotnet/Open-XML-SDK), MIT License.
+- [ClosedXML](https://github.com/ClosedXML/ClosedXML), MIT License.
 - [Microsoft Edge WebView2](https://developer.microsoft.com/microsoft-edge/webview2/).

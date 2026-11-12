@@ -26,7 +26,7 @@ public class ProfileStore
     }
 
     private string ProfilesFolder => Path.Combine(dataFolder, "Profiles");
-    private string ProfileFolder(string profile) => Path.Combine(ProfilesFolder, NameCleaner.Clean(profile));
+    public string ProfileFolder(string profile) => Path.Combine(ProfilesFolder, NameCleaner.Clean(profile));
     private string FieldsFolder(string profile) => Path.Combine(ProfileFolder(profile), "Fields");
     private string FieldFolder(string profile, string field) => Path.Combine(FieldsFolder(profile), NameCleaner.Clean(field));
     private string SpecialtyPath(string profile, string field, string specialty) =>

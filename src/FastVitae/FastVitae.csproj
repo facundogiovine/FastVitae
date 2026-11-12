@@ -9,10 +9,11 @@
     <ApplicationIcon>FastVitae.ico</ApplicationIcon>
     <Product>Fast Vitae</Product>
     <AssemblyTitle>Fast Vitae</AssemblyTitle>
-    <Version>1.0.2</Version>
+    <Version>1.1.0</Version>
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="ClosedXML" Version="0.105.1" />
     <PackageReference Include="DocumentFormat.OpenXml" Version="3.5.1" />
     <PackageReference Include="FamFamFam.Flags.Wpf" Version="1.2.1" />
     <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.4314.35" />

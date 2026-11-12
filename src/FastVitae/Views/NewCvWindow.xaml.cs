@@ -14,6 +14,7 @@ public partial class NewCvWindow : Window
 
     public string Company => CompanyBox.Text.Trim();
     public string Role => RoleBox.Text.Trim();
+    private string Field => FieldCombo.Text.Trim();
 
     // Content for the editor
     public CvDocument? Document { get; private set; }
@@ -29,14 +30,13 @@ public partial class NewCvWindow : Window
 
         FieldCombo.ItemsSource = store.ListFields(profile);
         FieldCombo.SelectedIndex = 0;
+        ShowSpecialties();
 
         existingCvs = store.ListCvs(profile).Where(cv => !cv.Unreadable).ToList();
         ExistingCombo.ItemsSource = existingCvs.Select(cv => $"{cv.Company} - {cv.Role}").ToList();
         ExistingCombo.SelectedIndex = 0;
-
-        // Disable empty options
-        SpecialtyOption.IsEnabled = FieldCombo.Items.Count > 0;
         ExistingOption.IsEnabled = existingCvs.Count > 0;
+
         if (!store.HasPicture(profile))
         {
             PictureOption.IsEnabled = false;
@@ -47,20 +47,26 @@ public partial class NewCvWindow : Window
         Loaded += (s, e) => CompanyBox.Focus();
     }
 
-    private void FieldCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    private void FieldCombo_Changed(object sender, RoutedEventArgs e) => ShowSpecialties();
+
+    // List the Field's Specialties
+    private void ShowSpecialties()
     {
-        if (FieldCombo.SelectedItem is string field)
-        {
-            SpecialtyCombo.ItemsSource = store.ListSpecialties(profile, field);
-            SpecialtyCombo.SelectedIndex = 0;
-        }
+        var specialties = Field == "" ? new List<string>() : store.ListSpecialties(profile, Field);
+        SpecialtyCombo.ItemsSource = specialties;
+        SpecialtyCombo.SelectedIndex = 0;
+
+        SpecialtyOption.IsEnabled = specialties.Count > 0;
+        SpecialtyOption.ToolTip = specialties.Count > 0 ? null : "This Field has no Specialties yet";
+        if (specialties.Count == 0 && SpecialtyOption.IsChecked == true)
+            ScratchOption.IsChecked = true;
     }
 
     private void Start_Click(object sender, RoutedEventArgs e)
     {
-        if (Company == "" || Role == "")
+        if (Company == "" || Role == "" || Field == "")
         {
-            MessageBox.Show(this, "Please enter the company and the role.", "Fast Vitae");
+            MessageBox.Show(this, "Please enter the company, the role and the Field.", "Fast Vitae");
             return;
         }
 
@@ -69,16 +75,15 @@ public partial class NewCvWindow : Window
             MessageBox.Show(this, "You already have a CV for this company and role. It will be opened.", "Fast Vitae");
             Document = store.LoadCv(profile, Company, Role);
             AlreadyExists = true;
+            DialogResult = true;
+            return;
         }
-        else if (SpecialtyOption.IsChecked == true)
+
+        ShowSpecialties();
+        if (SpecialtyOption.IsChecked == true && SpecialtyCombo.SelectedItem is string specialty)
         {
-            if (FieldCombo.SelectedItem is not string field || SpecialtyCombo.SelectedItem is not string specialty)
-            {
-                MessageBox.Show(this, "Please pick a Field and a Specialty.", "Fast Vitae");
-                return;
-            }
             // Specialty content, profile contact
-            Document = store.LoadSpecialty(profile, field, specialty);
+            Document = store.LoadSpecialty(profile, Field, specialty);
             Document.BasicInfo = store.LoadProfile(profile);
         }
         else if (ExistingOption.IsChecked == true)
@@ -91,10 +96,10 @@ public partial class NewCvWindow : Window
             Document = CvDocument.NewFromScratch(store.LoadProfile(profile));
         }
 
-        // Existing CV keeps its setting
-        if (!AlreadyExists)
-            Document.ShowPicture = PictureOption.IsChecked == true;
-
+        // A typed Field is created
+        store.CreateField(profile, Field);
+        Document.Field = NameCleaner.Clean(Field);
+        Document.ShowPicture = PictureOption.IsChecked == true;
         DialogResult = true;
     }
 }

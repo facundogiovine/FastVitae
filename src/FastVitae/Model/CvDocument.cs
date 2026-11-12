@@ -73,6 +73,9 @@ public class CvDocument
 {
     public BasicInfo BasicInfo { get; set; } = new();
 
+    // Field this CV applies under
+    public string Field { get; set; } = "";
+
     // Show the profile picture
     public bool ShowPicture { get; set; }
 

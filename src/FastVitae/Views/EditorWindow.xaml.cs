@@ -37,7 +37,7 @@ public partial class EditorWindow : Window
     public static EditorWindow ForCv(ProfileStore store, string profile, CvDocument doc, string company, string role, bool alreadyCreated)
     {
         var window = new EditorWindow(store, profile, doc) { company = company, role = role };
-        window.Title = $"Fast Vitae -{company} - {role}";
+        window.Title = $"Fast Vitae - {company} - {role}";
         if (alreadyCreated)
             window.savedJson = window.CurrentJson();
         return window;
@@ -46,7 +46,7 @@ public partial class EditorWindow : Window
     public static EditorWindow ForSpecialty(ProfileStore store, string profile, CvDocument doc, string field, string specialty)
     {
         var window = new EditorWindow(store, profile, doc) { field = field, specialty = specialty };
-        window.Title = $"Fast Vitae -{field} - {specialty}";
+        window.Title = $"Fast Vitae - {field} - {specialty}";
         window.savedJson = window.CurrentJson();
 
         // Hide the CV-only parts
@@ -228,8 +228,9 @@ public partial class EditorWindow : Window
             }
             else
             {
-                await CreateCvFiles();
+                string pdfPath = await CreateCvFiles();
                 StatusText.Text = "Created in " + store.CvFolder(profile, company);
+                RecordApplication(pdfPath);
             }
             savedJson = CurrentJson();
         }
@@ -241,8 +242,25 @@ public partial class EditorWindow : Window
         }
     }
 
+    // Add to the applications Excel
+    private void RecordApplication(string pdfPath)
+    {
+        try
+        {
+            string field = doc.Field == "" ? "General" : doc.Field;
+            string cvPath = Path.GetRelativePath(store.ProfileFolder(profile), pdfPath);
+            new ApplicationStore(store).Record(profile, field, NameCleaner.Clean(company), NameCleaner.Clean(role), cvPath);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            MessageBox.Show(this,
+                "The CV was created, but the applications list could not be updated. If its Excel file is open, close it and click Create again.\n\n" + ex.Message,
+                "Fast Vitae", MessageBoxButton.OK, MessageBoxImage.Warning);
+        }
+    }
+
     // Write data, Word and PDF
-    private async Task CreateCvFiles()
+    private async Task<string> CreateCvFiles()
     {
         store.SaveCv(profile, company, role, doc);
 
@@ -271,6 +289,7 @@ public partial class EditorWindow : Window
         bool printed = await Preview.CoreWebView2.PrintToPdfAsync(pdfPath, settings);
         if (!printed)
             throw new IOException("The PDF could not be written: " + pdfPath);
+        return pdfPath;
     }
 
     private void SaveToSpecialty_Click(object sender, RoutedEventArgs e)

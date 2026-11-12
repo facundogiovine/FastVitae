@@ -10,19 +10,15 @@
         <TextBlock Text="Role" Style="{StaticResource Label}"/>
         <TextBox x:Name="RoleBox" ToolTip="The position you are applying for in that company"/>
 
+        <TextBlock Text="Field" Style="{StaticResource Label}"/>
+        <ComboBox x:Name="FieldCombo" IsEditable="True" LostFocus="FieldCombo_Changed" SelectionChanged="FieldCombo_Changed"
+                  ToolTip="Pick a Field or type a new one, for example: Programming"/>
+
         <TextBlock Text="Start from" Style="{StaticResource Label}" Margin="0,16,0,4"/>
         <RadioButton x:Name="ScratchOption" Content="Scratch" IsChecked="True" Margin="0,2"/>
 
-        <RadioButton x:Name="SpecialtyOption" Content="A Specialty" Margin="0,8,0,2"/>
-        <Grid Margin="20,2,0,0" IsEnabled="{Binding IsChecked, ElementName=SpecialtyOption}">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition/>
-                <ColumnDefinition Width="8"/>
-                <ColumnDefinition/>
-            </Grid.ColumnDefinitions>
-            <ComboBox x:Name="FieldCombo" Grid.Column="0" SelectionChanged="FieldCombo_SelectionChanged"/>
-            <ComboBox x:Name="SpecialtyCombo" Grid.Column="2"/>
-        </Grid>
+        <RadioButton x:Name="SpecialtyOption" Content="A Specialty" Margin="0,8,0,2" ToolTipService.ShowOnDisabled="True"/>
+        <ComboBox x:Name="SpecialtyCombo" Margin="20,2,0,0" IsEnabled="{Binding IsChecked, ElementName=SpecialtyOption}"/>
 
         <RadioButton x:Name="ExistingOption" Content="An already existing CV" Margin="0,8,0,2"/>
         <ComboBox x:Name="ExistingCombo" Margin="20,2,0,0" IsEnabled="{Binding IsChecked, ElementName=ExistingOption}"/>

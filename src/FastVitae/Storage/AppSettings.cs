@@ -13,7 +13,8 @@ public class AppSettings
     private static string AppFolder => AppContext.BaseDirectory;
     private static string FilePath => Path.Combine(AppFolder, "settings.json");
 
-    public static string DefaultDataFolder => Path.Combine(AppFolder, "Data");
+    public static string DefaultDataFolder =>
+        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Fast Vitae");
 
     // Full path, or empty
     public string FullDataFolder => DataFolder == "" ? "" : Path.GetFullPath(DataFolder, AppFolder);
