@@ -10,6 +10,8 @@ You fill in a form on the left and see the finished CV on the right. Fast Vitae 
 
 Get `FastVitae.exe` from the [latest release](https://github.com/facundogiovine/FastVitae/releases/latest), put it in any folder and run it. There is nothing to install.
 
+The exe is not code-signed yet, so Windows may show "Windows protected your PC" the first time. Click **More info**, then **Run anyway**.
+
 ## Features
 
 - One CV per company and role, saved in a folder named after the company.
@@ -56,9 +58,19 @@ Data\
 
 `settings.json` next to the exe remembers the data folder and the last profile used.
 
+## Privacy
+
+This program will not transfer any information to other networked systems unless specifically requested by the user or the person installing or operating it.
+
+## Releases
+
+Every release is built by GitHub Actions from the tagged source in this repository. See `.github/workflows/build.yml`.
+
+Project owner, committer and release approver: [facundogiovine](https://github.com/facundogiovine).
+
 ## License
 
-All rights reserved. The app is free to download and use. The source is public for viewing only. See `LICENSE`.
+MIT. See `LICENSE`.
 
 ## Third-party
 
