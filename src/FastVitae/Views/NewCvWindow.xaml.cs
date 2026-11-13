@@ -1,3 +1,4 @@
+using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using FastVitae.Model;
@@ -37,6 +38,23 @@ public partial class NewCvWindow : Window
         ExistingCombo.SelectedIndex = 0;
         ExistingOption.IsEnabled = existingCvs.Count > 0;
 
+        foreach (var cv in existingCvs)
+        {
+            string field;
+            try
+            {
+                field = store.LoadCv(profile, cv.Company, cv.Role).Field;
+            }
+            catch (Exception ex) when (ex is IOException or System.Text.Json.JsonException)
+            {
+                continue;
+            }
+            if (!companiesByField.TryGetValue(field, out var companies))
+                companiesByField[field] = companies = new SortedSet<string>(StringComparer.OrdinalIgnoreCase);
+            companies.Add(cv.Company);
+        }
+        ShowCompanies();
+
         ShowPictureNote();
         Loaded += (s, e) => CompanyBox.Focus();
     }
@@ -52,7 +70,22 @@ public partial class NewCvWindow : Window
         ShowPictureNote();
     }
 
-    private void FieldCombo_Changed(object sender, RoutedEventArgs e) => ShowSpecialties();
+    // Companies with CVs, by Field
+    private readonly Dictionary<string, SortedSet<string>> companiesByField = new(StringComparer.OrdinalIgnoreCase);
+
+    private void FieldCombo_Changed(object sender, RoutedEventArgs e)
+    {
+        ShowSpecialties();
+        ShowCompanies();
+    }
+
+    // Keep typed text, swap list
+    private void ShowCompanies()
+    {
+        string typed = CompanyBox.Text;
+        CompanyBox.ItemsSource = companiesByField.TryGetValue(Field, out var companies) ? companies.ToList() : new List<string>();
+        CompanyBox.Text = typed;
+    }
 
     // List the Field's Specialties
     private void ShowSpecialties()
