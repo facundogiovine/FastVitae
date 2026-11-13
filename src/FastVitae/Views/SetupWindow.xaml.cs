@@ -12,7 +12,7 @@ public partial class SetupWindow : Window
     private readonly BasicInfo info;
 
     // Picked picture, not saved yet
-    private string? chosenPicture;
+    private System.Windows.Media.Imaging.BitmapSource? chosenPicture;
     private bool pictureRemoved;
 
     public string DataFolder => FolderBox.Text.Trim();
@@ -57,32 +57,22 @@ public partial class SetupWindow : Window
             store.DeletePicture(profile);
     }
 
-    private void ShowPicture(string path)
+    private void ShowPicture(string path) => ShowPicture(PictureFile.Load(path));
+
+    private void ShowPicture(System.Windows.Media.Imaging.BitmapSource picture)
     {
-        PictureImage.Source = PictureFile.Load(path);
+        PictureImage.Source = picture;
         RemovePictureButton.Visibility = Visibility.Visible;
     }
 
     private void ChoosePicture_Click(object sender, RoutedEventArgs e)
     {
-        var dialog = new OpenFileDialog
-        {
-            Title = Text.Get("Choose your picture"),
-            Filter = Text.Get("Pictures") + "|*.jpg;*.jpeg;*.png;*.bmp|" + Text.Get("All files") + "|*.*"
-        };
-        if (dialog.ShowDialog(this) != true)
+        var picture = App.PickPicture(this, info.FullName, info.Title);
+        if (picture == null)
             return;
-
-        try
-        {
-            ShowPicture(dialog.FileName);
-            chosenPicture = dialog.FileName;
-            pictureRemoved = false;
-        }
-        catch (Exception ex) when (ex is NotSupportedException or IOException or UnauthorizedAccessException)
-        {
-            MessageBox.Show(this, Text.Get("That file could not be opened as a picture."), "Fast Vitae");
-        }
+        ShowPicture(picture);
+        chosenPicture = picture;
+        pictureRemoved = false;
     }
 
     private void RemovePicture_Click(object sender, RoutedEventArgs e)

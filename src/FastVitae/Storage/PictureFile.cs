@@ -24,27 +24,65 @@ public static class PictureFile
     }
 
     // Portrait shape, 4 by 5
-    private const double WidthOverHeight = 0.8;
+    public const double WidthOverHeight = 0.8;
 
-    // Rotate, crop, shrink, save JPEG
-    public static void SaveResized(string sourcePath, string targetPath)
+    // Longest side kept in memory
+    private const int LoadSide = 2000;
+
+    // Upright and shrunk, for cropping
+    public static BitmapSource LoadForCrop(string path)
     {
-        BitmapSource picture = Load(sourcePath);
-        picture = new TransformedBitmap(picture, new RotateTransform(RotationOf(sourcePath)));
+        int width, height;
+        using (var stream = File.OpenRead(path))
+        {
+            var frame = BitmapFrame.Create(stream, BitmapCreateOptions.DelayCreation, BitmapCacheOption.None);
+            width = frame.PixelWidth;
+            height = frame.PixelHeight;
+        }
 
+        var image = new BitmapImage();
+        image.BeginInit();
+        image.UriSource = new Uri(path);
+        image.CacheOption = BitmapCacheOption.OnLoad;
+        image.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
+        if (Math.Max(width, height) > LoadSide)
+        {
+            if (width >= height)
+                image.DecodePixelWidth = LoadSide;
+            else
+                image.DecodePixelHeight = LoadSide;
+        }
+        image.EndInit();
+        image.Freeze();
+
+        var upright = new TransformedBitmap(image, new RotateTransform(RotationOf(path)));
+        upright.Freeze();
+        return upright;
+    }
+
+    // Biggest centered 4:5 area
+    public static System.Windows.Int32Rect CenterArea(BitmapSource picture)
+    {
         int width = picture.PixelWidth;
         int height = picture.PixelHeight;
         if ((double)width / height > WidthOverHeight)
-            width = (int)Math.Round(height * WidthOverHeight);   // too wide: cut the sides
+            width = (int)Math.Round(height * WidthOverHeight);
         else
-            height = (int)Math.Round(width / WidthOverHeight);   // too tall: cut the ends
-        var middle = new System.Windows.Int32Rect(
-            (picture.PixelWidth - width) / 2, (picture.PixelHeight - height) / 2, width, height);
-        picture = new CroppedBitmap(picture, middle);
+            height = (int)Math.Round(width / WidthOverHeight);
+        return new System.Windows.Int32Rect((picture.PixelWidth - width) / 2, (picture.PixelHeight - height) / 2, width, height);
+    }
 
-        double scale = Math.Min(1.0, (double)MaxSide / height);
-        picture = new TransformedBitmap(picture, new ScaleTransform(scale, scale));
+    // Cut the area, shrink it
+    public static BitmapSource Crop(BitmapSource picture, System.Windows.Int32Rect area)
+    {
+        double scale = Math.Min(1.0, (double)MaxSide / area.Height);
+        var result = new TransformedBitmap(new CroppedBitmap(picture, area), new ScaleTransform(scale, scale));
+        result.Freeze();
+        return result;
+    }
 
+    public static void SaveJpeg(BitmapSource picture, string targetPath)
+    {
         var encoder = new JpegBitmapEncoder { QualityLevel = 90 };
         encoder.Frames.Add(BitmapFrame.Create(picture));
         Directory.CreateDirectory(Path.GetDirectoryName(targetPath)!);

@@ -22,7 +22,7 @@ The exe is not code-signed yet, so Windows may show "Windows protected your PC" 
 - Right-click any CV field to set its font, size, colour, bold, italic or strikethrough. Apply one format to all dates, titles, companies or locations at once.
 - English, Spanish and Portuguese, for both the app and the CV's fixed words.
 - **Applications** tab: every CV you create is logged with its Field, company, role and date. Mark each one Applied, In process, Approved or Rejected, filter the list, open the CV you sent or its folder. The list lives in one Excel file per profile, and Excel is not needed to use it.
-- Optional picture header: name and title on the left, picture on the right. Replaced pictures are kept, numbered.
+- Optional picture header: name and title on the left, picture on the right. Pick which part of the photo to use, with a live preview. Replaced pictures are kept, numbered.
 - Move the data folder, or send only new CVs to another folder.
 - Several profiles on one install. No accounts, no sign-up.
 - Works fully offline. No database. Your data is plain JSON files in a folder you choose.

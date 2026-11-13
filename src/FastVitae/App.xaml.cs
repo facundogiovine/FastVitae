@@ -86,17 +86,24 @@ public partial class App : Application
     // Pick and save picture
     public static bool ChoosePicture(Window owner, ProfileStore store, string profile)
     {
-        var dialog = new Microsoft.Win32.OpenFileDialog
+        string name = profile, title = "";
+        try
         {
-            Title = Text.Get("Choose your picture"),
-            Filter = Text.Get("Pictures") + "|*.jpg;*.jpeg;*.png;*.bmp|" + Text.Get("All files") + "|*.*"
-        };
-        if (dialog.ShowDialog(owner) != true)
+            var info = store.LoadProfile(profile);
+            name = info.FullName;
+            title = info.Title;
+        }
+        catch (Exception ex) when (ex is IOException or System.Text.Json.JsonException)
+        {
+        }
+
+        var picture = PickPicture(owner, name, title);
+        if (picture == null)
             return false;
 
         try
         {
-            store.SavePicture(profile, dialog.FileName);
+            store.SavePicture(profile, picture);
             return true;
         }
         catch (Exception ex) when (ex is NotSupportedException or IOException or UnauthorizedAccessException)
@@ -104,6 +111,32 @@ public partial class App : Application
             MessageBox.Show(owner, Text.Get("The picture could not be saved:") + " " + ex.Message, "Fast Vitae");
             return false;
         }
+    }
+
+    // Pick a file, then crop
+    public static System.Windows.Media.Imaging.BitmapSource? PickPicture(Window owner, string name, string title)
+    {
+        var dialog = new Microsoft.Win32.OpenFileDialog
+        {
+            Title = Text.Get("Choose your picture"),
+            Filter = Text.Get("Pictures") + "|*.jpg;*.jpeg;*.png;*.bmp|" + Text.Get("All files") + "|*.*"
+        };
+        if (dialog.ShowDialog(owner) != true)
+            return null;
+
+        System.Windows.Media.Imaging.BitmapSource picture;
+        try
+        {
+            picture = PictureFile.LoadForCrop(dialog.FileName);
+        }
+        catch (Exception ex) when (ex is NotSupportedException or IOException or UnauthorizedAccessException or ArgumentException or InvalidOperationException)
+        {
+            MessageBox.Show(owner, Text.Get("That file could not be opened as a picture."), "Fast Vitae");
+            return null;
+        }
+
+        var crop = new CropWindow(picture, name, title) { Owner = owner };
+        return crop.ShowDialog() == true ? crop.Cropped : null;
     }
 
     // Show a folder in Explorer

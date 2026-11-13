@@ -197,6 +197,8 @@ public static class Text
         ["Apply to all titles"] = ("Aplicar a todos los cargos", "Aplicar a todos os cargos"),
         ["Apply to all companies"] = ("Aplicar a todas las empresas", "Aplicar a todas as empresas"),
         ["Apply to all locations"] = ("Aplicar a todas las ubicaciones", "Aplicar a todas as localizações"),
+        ["Crop picture"] = ("Recortar foto", "Recortar foto"),
+        ["Use picture"] = ("Usar foto", "Usar foto"),
         ["Text format"] = ("Formato de texto", "Formato do texto"),
         ["Font"] = ("Fuente", "Fonte"),
         ["Size"] = ("Tamaño", "Tamanho"),

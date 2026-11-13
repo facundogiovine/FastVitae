@@ -84,11 +84,11 @@ public class ProfileStore
     public bool HasPicture(string profile) => File.Exists(PicturePath(profile));
 
     // Old picture is kept aside
-    public void SavePicture(string profile, string sourceFile)
+    public void SavePicture(string profile, System.Windows.Media.Imaging.BitmapSource picture)
     {
-        // Bad file keeps old picture
+        // Failed save keeps old picture
         string temp = PicturePath(profile) + ".new";
-        PictureFile.SaveResized(sourceFile, temp);
+        PictureFile.SaveJpeg(picture, temp);
         KeepOldPicture(profile);
         File.Move(temp, PicturePath(profile));
     }
