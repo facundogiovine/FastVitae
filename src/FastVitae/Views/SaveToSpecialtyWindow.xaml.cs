@@ -39,14 +39,14 @@ public partial class SaveToSpecialtyWindow : Window
     {
         if (Field == "" || Specialty == "")
         {
-            MessageBox.Show(this, "Please enter a Field and a Specialty.", "Fast Vitae");
+            MessageBox.Show(this, Text.Get("Please enter a Field and a Specialty."), "Fast Vitae");
             return;
         }
 
         if (store.SpecialtyExists(profile, Field, Specialty))
         {
             var answer = MessageBox.Show(this,
-                $"{Field} - {Specialty} already has saved content. Replace it?",
+                Text.Format("{0} - {1} already has saved content. Replace it?", Field, Specialty),
                 "Fast Vitae", MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.No);
             if (answer != MessageBoxResult.Yes)
                 return;

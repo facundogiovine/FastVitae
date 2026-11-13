@@ -6,6 +6,7 @@ using FastVitae.Model;
 using A = DocumentFormat.OpenXml.Drawing;
 using DW = DocumentFormat.OpenXml.Drawing.Wordprocessing;
 using PIC = DocumentFormat.OpenXml.Drawing.Pictures;
+using WordText = DocumentFormat.OpenXml.Wordprocessing.Text;
 
 namespace FastVitae.Rendering;
 
@@ -75,17 +76,17 @@ public class DocxWriter
 
         var nameAndTitle = new List<Paragraph>
         {
-            Paragraph(center: !pictured, spaceAfter: 0, Run(info.FullName, bold: true, size: 48))
+            Paragraph(center: !pictured, spaceAfter: 0, Run(info.FullName, bold: true, size: 48, style: StyleOf(doc.Styles, "Name")))
         };
         if (HasText(info.Title))
-            nameAndTitle.Add(Paragraph(center: !pictured, spaceAfter: pictured ? 0 : 80, Run(info.Title, size: 30)));
+            nameAndTitle.Add(Paragraph(center: !pictured, spaceAfter: pictured ? 0 : 80, Run(info.Title, size: 30, style: StyleOf(doc.Styles, "Title"))));
 
         if (pictured)
             body.Append(PicturedHeader(nameAndTitle, picturePath!));
         else
             body.Append(nameAndTitle);
 
-        var contact = ContactRuns(info);
+        var contact = ContactRuns(info, StyleOf(doc.Styles, "Contact"));
         if (contact.Count > 0)
         {
             var paragraph = Paragraph(center: true, spaceAfter: 160, contact.ToArray());
@@ -96,7 +97,7 @@ public class DocxWriter
         }
 
         if (HasText(doc.Summary))
-            body.Append(Paragraph(center: false, spaceAfter: 120, Run(doc.Summary, italic: true)));
+            body.Append(Paragraph(center: false, spaceAfter: 120, Run(doc.Summary, italic: true, style: StyleOf(doc.Styles, "Summary"))));
     }
 
     // Borderless two-cell header table
@@ -161,12 +162,12 @@ public class DocxWriter
         { DistanceFromTop = 0U, DistanceFromBottom = 0U, DistanceFromLeft = 0U, DistanceFromRight = 0U });
     }
 
-    private List<OpenXmlElement> ContactRuns(BasicInfo info)
+    private List<OpenXmlElement> ContactRuns(BasicInfo info, TextStyle? style)
     {
         var parts = new List<OpenXmlElement>();
-        if (HasText(info.Location)) parts.Add(Run(info.Location));
-        if (HtmlRenderer.PhoneText(info) != "") parts.Add(Run(HtmlRenderer.PhoneText(info)));
-        if (HasText(info.Email)) parts.Add(Run(info.Email));
+        if (HasText(info.Location)) parts.Add(Run(info.Location, style: style));
+        if (HtmlRenderer.PhoneText(info) != "") parts.Add(Run(HtmlRenderer.PhoneText(info), style: style));
+        if (HasText(info.Email)) parts.Add(Run(info.Email, style: style));
         if (HasText(info.LinkedIn)) parts.Add(Link(info.LinkedIn));
 
         // Separate parts with a bar
@@ -174,7 +175,7 @@ public class DocxWriter
         foreach (var part in parts)
         {
             if (runs.Count > 0)
-                runs.Add(Run(" | "));
+                runs.Add(Run(" | ", style: style));
             runs.Add(part);
         }
         return runs;
@@ -182,34 +183,30 @@ public class DocxWriter
 
     private void AddBulletColumns(Section section)
     {
-        var bullets = section.Bullets.Where(HasText).ToList();
-        if (bullets.Count == 0)
+        var columns = section.Columns
+            .Select(column => column.Entries.Where(entry => HasText(entry.Text)).ToList())
+            .Where(bullets => bullets.Count > 0)
+            .ToList();
+        if (columns.Count == 0)
             return;
-        AddSectionTitle(section.Title);
+        AddSectionTitle(section.Title, StyleOf(section.Styles, "SectionTitle"));
 
-        // Borderless table, three per row
+        // Borderless table, one row
+        string cellWidth = (TextWidth / columns.Count).ToString();
         var table = new Table(new TableProperties(
             new TableWidth { Width = TextWidth.ToString(), Type = TableWidthUnitValues.Dxa },
             new TableLayout { Type = TableLayoutValues.Fixed }));
-        table.Append(new TableGrid(
-            new GridColumn { Width = (TextWidth / 3).ToString() },
-            new GridColumn { Width = (TextWidth / 3).ToString() },
-            new GridColumn { Width = (TextWidth / 3).ToString() }));
+        table.Append(new TableGrid(columns.Select(_ => new GridColumn { Width = cellWidth })));
 
-        for (int start = 0; start < bullets.Count; start += 3)
+        var row = new TableRow();
+        foreach (var bullets in columns)
         {
-            var row = new TableRow();
-            for (int column = 0; column < 3; column++)
-            {
-                int index = start + column;
-                // Every cell needs a paragraph
-                var paragraph = index < bullets.Count ? Bullet(bullets[index]) : Paragraph(center: false, spaceAfter: 0);
-                row.Append(new TableCell(
-                    new TableCellProperties(new TableCellWidth { Width = (TextWidth / 3).ToString(), Type = TableWidthUnitValues.Dxa }),
-                    paragraph));
-            }
-            table.Append(row);
+            var cell = new TableCell(new TableCellProperties(
+                new TableCellWidth { Width = cellWidth, Type = TableWidthUnitValues.Dxa }));
+            cell.Append(bullets.Select(entry => Bullet(entry.Text, StyleOf(entry.Styles, "Bullet"))));
+            row.Append(cell);
         }
+        table.Append(row);
         body.Append(table);
     }
 
@@ -220,13 +217,13 @@ public class DocxWriter
         {
             var entryParagraphs = new List<Paragraph>();
             if (HasText(entry.Name) || HasText(entry.Place))
-                entryParagraphs.Add(LeftRightLine(entry.Name, entry.Place));
+                entryParagraphs.Add(LeftRightLine(entry.Name, entry.Place, StyleOf(entry.Styles, "EntryName"), StyleOf(entry.Styles, "Place")));
 
             foreach (var role in entry.Roles)
             {
                 if (HasText(role.Title) || HasText(role.Dates))
-                    entryParagraphs.Add(LeftRightLine(role.Title, role.Dates));
-                entryParagraphs.AddRange(role.Bullets.Where(HasText).Select(Bullet));
+                    entryParagraphs.Add(LeftRightLine(role.Title, role.Dates, StyleOf(role.Styles, "RoleTitle"), StyleOf(role.Styles, "Dates")));
+                entryParagraphs.AddRange(role.Bullets.Where(HasText).Select(text => Bullet(text, StyleOf(role.Styles, "Bullets"))));
             }
 
             // Gap after each entry
@@ -237,14 +234,14 @@ public class DocxWriter
 
         if (paragraphs.Count == 0)
             return;
-        AddSectionTitle(section.Title);
+        AddSectionTitle(section.Title, StyleOf(section.Styles, "SectionTitle"));
         body.Append(paragraphs);
     }
 
     // Bold title with underline
-    private void AddSectionTitle(string title)
+    private void AddSectionTitle(string title, TextStyle? style)
     {
-        var paragraph = Paragraph(center: false, spaceAfter: 160, Run(title, bold: true));
+        var paragraph = Paragraph(center: false, spaceAfter: 160, Run(title, bold: true, style: style));
         paragraph.ParagraphProperties!.SpacingBetweenLines!.Before = "240";
         paragraph.ParagraphProperties.KeepNext = new KeepNext();
         paragraph.ParagraphProperties.ParagraphBorders = new ParagraphBorders(
@@ -255,19 +252,19 @@ public class DocxWriter
     // ---- Small building blocks ----
 
     // Bold left, plain right
-    private static Paragraph LeftRightLine(string left, string right)
+    private static Paragraph LeftRightLine(string left, string right, TextStyle? leftStyle, TextStyle? rightStyle)
     {
         var paragraph = Paragraph(center: false, spaceAfter: 0,
-            Run(left, bold: true), new Run(new TabChar()), Run(right));
+            Run(left, bold: true, style: leftStyle), new Run(new TabChar()), Run(right, style: rightStyle));
         paragraph.ParagraphProperties!.Tabs = new Tabs(
             new TabStop { Val = TabStopValues.Right, Position = TextWidth });
         paragraph.ParagraphProperties.KeepNext = new KeepNext();
         return paragraph;
     }
 
-    private static Paragraph Bullet(string text)
+    private static Paragraph Bullet(string text, TextStyle? style)
     {
-        var paragraph = Paragraph(center: false, spaceAfter: 0, Run(text));
+        var paragraph = Paragraph(center: false, spaceAfter: 0, Run(text, style: style));
         paragraph.ParagraphProperties!.NumberingProperties = new NumberingProperties(
             new NumberingLevelReference { Val = 0 },
             new NumberingId { Val = BulletListId });
@@ -288,11 +285,11 @@ public class DocxWriter
         return paragraph;
     }
 
-    private static Run Run(string text, bool bold = false, bool italic = false, int size = 22)
+    private static Run Run(string text, bool bold = false, bool italic = false, int size = 22, TextStyle? style = null)
     {
         return new Run(
-            RunStyle(bold, italic, size),
-            new Text(text.Trim() == "|" ? text : text.Trim()) { Space = SpaceProcessingModeValues.Preserve });
+            style == null ? RunStyle(bold, italic, size) : RunStyle(style),
+            new WordText(text.Trim() == "|" ? text : text.Trim()) { Space = SpaceProcessingModeValues.Preserve });
     }
 
     private static RunProperties RunStyle(bool bold, bool italic, int size)
@@ -306,6 +303,23 @@ public class DocxWriter
         return properties;
     }
 
+    // Field style set by the user
+    private static TextStyle? StyleOf(Dictionary<string, TextStyle> styles, string key) =>
+        styles.TryGetValue(key, out var style) ? style : null;
+
+    private static RunProperties RunStyle(TextStyle style)
+    {
+        var properties = new RunProperties(
+            new RunFonts { Ascii = style.Font, HighAnsi = style.Font, EastAsia = style.Font, ComplexScript = style.Font });
+        if (style.Bold) properties.Append(new Bold());
+        if (style.Italic) properties.Append(new Italic());
+        if (style.Strike) properties.Append(new Strike());
+        properties.Append(new Color { Val = style.Color.TrimStart('#') });
+        properties.Append(new FontSize { Val = (style.Size * 2).ToString() });
+        properties.Append(new FontSizeComplexScript { Val = (style.Size * 2).ToString() });
+        return properties;
+    }
+
     // Clickable blue link
     private Hyperlink Link(string link)
     {
@@ -315,7 +329,7 @@ public class DocxWriter
         style.InsertAfter(new Color { Val = LinkBlue }, style.GetFirstChild<RunFonts>());
         style.Append(new Underline { Val = UnderlineValues.Single });
 
-        return new Hyperlink(new Run(style, new Text(link.Trim()))) { Id = relationship.Id };
+        return new Hyperlink(new Run(style, new WordText(link.Trim()))) { Id = relationship.Id };
     }
 
     // Define the bullet style

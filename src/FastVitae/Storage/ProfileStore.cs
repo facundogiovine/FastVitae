@@ -34,6 +34,23 @@ public class ProfileStore
     private string CvPath(string profile, string company, string role) =>
         Path.Combine(CvFolder(profile, company), NameCleaner.Clean(role) + ".json");
 
+    // Set: PDF and Word go here
+    public string CvOutputRoot { get; set; } = "";
+
+    // Where PDF and Word go
+    public string OutputFolder(string profile, string company) => CvOutputRoot == ""
+        ? CvFolder(profile, company)
+        : Path.Combine(CvOutputRoot, NameCleaner.Clean(profile), NameCleaner.Clean(company));
+
+    // Output folder, else old place
+    public string FolderToShow(string profile, string company) =>
+        Directory.Exists(OutputFolder(profile, company)) ? OutputFolder(profile, company) : CvFolder(profile, company);
+
+    // Top folder for the profile's CVs
+    public string OutputRoot(string profile) => CvOutputRoot == ""
+        ? Path.Combine(ProfileFolder(profile), "CVs")
+        : Path.Combine(CvOutputRoot, NameCleaner.Clean(profile));
+
     public string CvFolder(string profile, string company) =>
         Path.Combine(ProfileFolder(profile), "CVs", NameCleaner.Clean(company));
 
@@ -66,9 +83,40 @@ public class ProfileStore
 
     public bool HasPicture(string profile) => File.Exists(PicturePath(profile));
 
-    public void SavePicture(string profile, string sourceFile) => PictureFile.SaveResized(sourceFile, PicturePath(profile));
+    // Old picture is kept aside
+    public void SavePicture(string profile, string sourceFile)
+    {
+        // Resize first, so bad files keep the old
+        string temp = PicturePath(profile) + ".new";
+        PictureFile.SaveResized(sourceFile, temp);
+        KeepOldPicture(profile);
+        File.Move(temp, PicturePath(profile));
+    }
 
-    public void DeletePicture(string profile) => File.Delete(PicturePath(profile));
+    public void DeletePicture(string profile) => KeepOldPicture(profile);
+
+    // Rename to First_Last_Picture_N
+    private void KeepOldPicture(string profile)
+    {
+        if (!HasPicture(profile))
+            return;
+        string name;
+        try
+        {
+            var info = LoadProfile(profile);
+            name = $"{info.FirstName.Trim()}_{info.LastName.Trim()}";
+        }
+        catch (Exception ex) when (ex is IOException or System.Text.Json.JsonException)
+        {
+            name = profile;
+        }
+        name = NameCleaner.Clean(name.Replace(' ', '_'));
+
+        int number = 1;
+        while (File.Exists(Path.Combine(ProfileFolder(profile), $"{name}_Picture_{number}.jpg")))
+            number++;
+        File.Move(PicturePath(profile), Path.Combine(ProfileFolder(profile), $"{name}_Picture_{number}.jpg"));
+    }
 
     public void RenameProfile(string profile, string newName) =>
         Directory.Move(ProfileFolder(profile), ProfileFolder(newName));

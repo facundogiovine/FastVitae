@@ -1,34 +1,40 @@
 <Window x:Class="FastVitae.Views.NewCvWindow"
+        Background="{StaticResource PanelBrush}"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="New CV" Width="460" SizeToContent="Height"
+        xmlns:views="clr-namespace:FastVitae.Views"
+        Title="{views:T 'New CV'}" Width="460" SizeToContent="Height"
         WindowStartupLocation="CenterOwner" ResizeMode="NoResize" ShowInTaskbar="False">
     <StackPanel Margin="20">
-        <TextBlock Text="Company" Style="{StaticResource Label}" Margin="0,0,0,2"/>
-        <TextBox x:Name="CompanyBox" ToolTip="The company you are applying to"/>
+        <TextBlock Text="{views:T 'Company'}" Style="{StaticResource Label}" Margin="0,0,0,2"/>
+        <TextBox x:Name="CompanyBox" ToolTip="{views:T 'The company you are applying to'}"/>
 
-        <TextBlock Text="Role" Style="{StaticResource Label}"/>
-        <TextBox x:Name="RoleBox" ToolTip="The position you are applying for in that company"/>
+        <TextBlock Text="{views:T 'Role'}" Style="{StaticResource Label}"/>
+        <TextBox x:Name="RoleBox" ToolTip="{views:T 'The position you are applying for in that company'}"/>
 
-        <TextBlock Text="Field" Style="{StaticResource Label}"/>
+        <TextBlock Text="{views:T 'Field'}" Style="{StaticResource Label}"/>
         <ComboBox x:Name="FieldCombo" IsEditable="True" LostFocus="FieldCombo_Changed" SelectionChanged="FieldCombo_Changed"
-                  ToolTip="Pick a Field or type a new one, for example: Programming"/>
+                  ToolTip="{views:T 'Pick a Field or type a new one, for example: Programming'}"/>
 
-        <TextBlock Text="Start from" Style="{StaticResource Label}" Margin="0,16,0,4"/>
-        <RadioButton x:Name="ScratchOption" Content="Scratch" IsChecked="True" Margin="0,2"/>
+        <TextBlock Text="{views:T 'Start from'}" Style="{StaticResource Label}" Margin="0,16,0,4"/>
+        <RadioButton x:Name="ScratchOption" Content="{views:T 'Scratch'}" IsChecked="True" Margin="0,2"/>
 
-        <RadioButton x:Name="SpecialtyOption" Content="A Specialty" Margin="0,8,0,2" ToolTipService.ShowOnDisabled="True"/>
+        <RadioButton x:Name="SpecialtyOption" Content="{views:T 'A Specialty'}" Margin="0,8,0,2" ToolTipService.ShowOnDisabled="True"/>
         <ComboBox x:Name="SpecialtyCombo" Margin="20,2,0,0" IsEnabled="{Binding IsChecked, ElementName=SpecialtyOption}"/>
 
-        <RadioButton x:Name="ExistingOption" Content="An already existing CV" Margin="0,8,0,2"/>
+        <RadioButton x:Name="ExistingOption" Content="{views:T 'An already existing CV'}" Margin="0,8,0,2"/>
         <ComboBox x:Name="ExistingCombo" Margin="20,2,0,0" IsEnabled="{Binding IsChecked, ElementName=ExistingOption}"/>
 
-        <CheckBox x:Name="PictureOption" Content="Picture" Margin="0,18,0,0"
-                  ToolTip="Name and title on the left, your picture on the right"/>
+        <StackPanel Orientation="Horizontal" Margin="0,18,0,0">
+            <CheckBox x:Name="PictureOption" Content="{views:T 'Picture'}" MinWidth="0" VerticalAlignment="Center" Click="PictureOption_Click"
+                      ToolTip="{views:T 'Name and title on the left, your picture on the right'}"/>
+            <TextBlock x:Name="NoPictureNote" Text="{views:T 'Your profile has no picture, so you will need to provide one.'}"
+                       Foreground="{StaticResource MutedTextBrush}" VerticalAlignment="Center" TextWrapping="Wrap" MaxWidth="300" Margin="12,0,0,0"/>
+        </StackPanel>
 
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,20,0,0">
-            <Button Content="Cancel" IsCancel="True"/>
-            <Button Content="Start" IsDefault="True" Style="{StaticResource Primary}" Margin="0" Click="Start_Click"/>
+            <Button Content="{views:T 'Cancel'}" IsCancel="True"/>
+            <Button Content="{views:T 'Start'}" IsDefault="True" Style="{StaticResource Primary}" Margin="0" Click="Start_Click"/>
         </StackPanel>
     </StackPanel>
 </Window>

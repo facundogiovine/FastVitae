@@ -44,7 +44,7 @@ public partial class FieldsWindow : Window
 
     private void AddField_Click(object sender, RoutedEventArgs e)
     {
-        string? name = PromptWindow.Ask(this, "Add Field", "Field name");
+        string? name = PromptWindow.Ask(this, Text.Get("Add Field"), Text.Get("Field name"));
         if (name == null)
             return;
         Try(() => store.CreateField(profile, name));
@@ -55,7 +55,7 @@ public partial class FieldsWindow : Window
     {
         if (SelectedField == null)
             return;
-        string? name = PromptWindow.Ask(this, "Rename Field", "Field name", SelectedField);
+        string? name = PromptWindow.Ask(this, Text.Get("Rename Field"), Text.Get("Field name"), SelectedField);
         if (name == null || NameCleaner.Clean(name) == SelectedField)
             return;
         Try(() => store.RenameField(profile, SelectedField, name));
@@ -64,7 +64,7 @@ public partial class FieldsWindow : Window
 
     private void DeleteField_Click(object sender, RoutedEventArgs e)
     {
-        if (SelectedField == null || !Confirm($"Delete the Field {SelectedField} and all its Specialties?"))
+        if (SelectedField == null || !Confirm(Text.Format("Delete the Field {0} and all its Specialties?", SelectedField)))
             return;
         Try(() => store.DeleteField(profile, SelectedField));
         ShowFields(select: null);
@@ -76,15 +76,15 @@ public partial class FieldsWindow : Window
     {
         if (SelectedField == null)
         {
-            MessageBox.Show(this, "Add a Field first.", "Fast Vitae");
+            MessageBox.Show(this, Text.Get("Add a Field first."), "Fast Vitae");
             return;
         }
-        string? name = PromptWindow.Ask(this, "Add Specialty", "Specialty name");
+        string? name = PromptWindow.Ask(this, Text.Get("Add Specialty"), Text.Get("Specialty name"));
         if (name == null)
             return;
         if (store.SpecialtyExists(profile, SelectedField, name))
         {
-            MessageBox.Show(this, "That Specialty already exists.", "Fast Vitae");
+            MessageBox.Show(this, Text.Get("That Specialty already exists."), "Fast Vitae");
             return;
         }
 
@@ -106,7 +106,7 @@ public partial class FieldsWindow : Window
         }
         catch (Exception ex) when (ex is IOException or System.Text.Json.JsonException)
         {
-            MessageBox.Show(this, "This Specialty could not be read, so it was left untouched: " + ex.Message, "Fast Vitae");
+            MessageBox.Show(this, Text.Get("This Specialty could not be read, so it was left untouched:") + " " + ex.Message, "Fast Vitae");
             return;
         }
 
@@ -121,7 +121,7 @@ public partial class FieldsWindow : Window
     {
         if (SelectedField == null || SelectedSpecialty == null)
             return;
-        string? name = PromptWindow.Ask(this, "Rename Specialty", "Specialty name", SelectedSpecialty);
+        string? name = PromptWindow.Ask(this, Text.Get("Rename Specialty"), Text.Get("Specialty name"), SelectedSpecialty);
         if (name == null || NameCleaner.Clean(name) == SelectedSpecialty)
             return;
         Try(() => store.RenameSpecialty(profile, SelectedField, SelectedSpecialty, name));
@@ -130,7 +130,7 @@ public partial class FieldsWindow : Window
 
     private void DeleteSpecialty_Click(object sender, RoutedEventArgs e)
     {
-        if (SelectedField == null || SelectedSpecialty == null || !Confirm($"Delete the Specialty {SelectedSpecialty}?"))
+        if (SelectedField == null || SelectedSpecialty == null || !Confirm(Text.Format("Delete the Specialty {0}?", SelectedSpecialty)))
             return;
         Try(() => store.DeleteSpecialty(profile, SelectedField, SelectedSpecialty));
         ShowSpecialties(select: null);
@@ -153,7 +153,7 @@ public partial class FieldsWindow : Window
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
-            MessageBox.Show(this, "That could not be done: " + ex.Message, "Fast Vitae");
+            MessageBox.Show(this, Text.Get("That could not be done:") + " " + ex.Message, "Fast Vitae");
         }
     }
 }

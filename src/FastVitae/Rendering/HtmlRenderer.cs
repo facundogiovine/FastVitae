@@ -30,9 +30,9 @@ public static class HtmlRenderer
         var html = new StringBuilder();
         var info = doc.BasicInfo;
 
-        string nameAndTitle = $"<h1>{Text(info.FullName)}</h1>";
+        string nameAndTitle = $"<h1{Css(doc.Styles, "Name")}>{Text(info.FullName)}</h1>";
         if (HasText(info.Title))
-            nameAndTitle += $"<p class=\"title\">{Text(info.Title)}</p>";
+            nameAndTitle += $"<p class=\"title\"{Css(doc.Styles, "Title")}>{Text(info.Title)}</p>";
 
         if (UsesPicture(doc, picturePath))
         {
@@ -48,21 +48,21 @@ public static class HtmlRenderer
 
         string contact = ContactLine(info);
         if (contact != "")
-            html.Append($"<p class=\"contact\">{contact}</p>");
+            html.Append($"<p class=\"contact\"{Css(doc.Styles, "Contact")}>{contact}</p>");
 
         if (HasText(doc.Summary))
-            html.Append($"<p class=\"summary\">{Text(doc.Summary)}</p>");
+            html.Append($"<p class=\"summary\"{Css(doc.Styles, "Summary")}>{Text(doc.Summary)}</p>");
 
         foreach (var section in doc.Sections)
         {
             string content = section.Layout == SectionLayout.BulletColumns
-                ? BulletList(section.Bullets, "columns")
+                ? ColumnsHtml(section)
                 : string.Concat(section.Entries.Select(EntryHtml));
 
             // Skip empty sections
             if (content == "")
                 continue;
-            html.Append($"<h2>{Text(section.Title)}</h2>");
+            html.Append($"<h2{Css(section.Styles, "SectionTitle")}>{Text(section.Title)}</h2>");
             html.Append(content);
         }
         return html.ToString();
@@ -93,31 +93,56 @@ public static class HtmlRenderer
         return string.Join(" | ", parts);
     }
 
+    // Side by side lists
+    private static string ColumnsHtml(Section section)
+    {
+        var lists = section.Columns
+            .Select(column => ColumnList(column))
+            .Where(list => list != "")
+            .ToList();
+        return lists.Count == 0 ? "" : $"<div class=\"columns\">{string.Concat(lists.Select(list => $"<div>{list}</div>"))}</div>";
+    }
+
     private static string EntryHtml(Entry entry)
     {
         var html = new StringBuilder();
         if (HasText(entry.Name) || HasText(entry.Place))
-            html.Append(Line("entry-name", entry.Name, entry.Place));
+            html.Append(Line("entry-name", entry.Name, entry.Place, Css(entry.Styles, "EntryName"), Css(entry.Styles, "Place")));
 
         foreach (var role in entry.Roles)
         {
             if (HasText(role.Title) || HasText(role.Dates))
-                html.Append(Line("role-title", role.Title, role.Dates));
-            html.Append(BulletList(role.Bullets, ""));
+                html.Append(Line("role-title", role.Title, role.Dates, Css(role.Styles, "RoleTitle"), Css(role.Styles, "Dates")));
+            html.Append(BulletList(role.Bullets, Css(role.Styles, "Bullets")));
         }
         return html.Length == 0 ? "" : $"<div class=\"entry\">{html}</div>";
     }
 
-    private static string Line(string leftClass, string left, string right) =>
-        $"<div class=\"line\"><span class=\"{leftClass}\">{Text(left)}</span><span class=\"right\">{Text(right)}</span></div>";
+    private static string Line(string leftClass, string left, string right, string leftCss, string rightCss) =>
+        $"<div class=\"line\"><span class=\"{leftClass}\"{leftCss}>{Text(left)}</span><span class=\"right\"{rightCss}>{Text(right)}</span></div>";
 
-    private static string BulletList(List<string> bullets, string cssClass)
+    private static string BulletList(List<string> bullets, string css)
     {
         var items = bullets.Where(HasText).Select(b => $"<li>{Text(b)}</li>").ToList();
-        if (items.Count == 0)
+        return items.Count == 0 ? "" : $"<ul{css}>{string.Concat(items)}</ul>";
+    }
+
+    // Each bullet its own style
+    private static string ColumnList(BulletColumn column)
+    {
+        var items = column.Entries.Where(entry => HasText(entry.Text))
+            .Select(entry => $"<li{Css(entry.Styles, "Bullet")}>{Text(entry.Text)}</li>").ToList();
+        return items.Count == 0 ? "" : $"<ul>{string.Concat(items)}</ul>";
+    }
+
+    // Inline CSS for a set style
+    private static string Css(Dictionary<string, TextStyle> styles, string key)
+    {
+        if (!styles.TryGetValue(key, out var style))
             return "";
-        string classPart = cssClass == "" ? "" : $" class=\"{cssClass}\"";
-        return $"<ul{classPart}>{string.Concat(items)}</ul>";
+        return $" style=\"font-family: '{style.Font}', 'STIX Two Text', serif; font-size: {style.Size}pt; color: {style.Color}; " +
+            $"font-weight: {(style.Bold ? "bold" : "normal")}; font-style: {(style.Italic ? "italic" : "normal")}; " +
+            $"text-decoration: {(style.Strike ? "line-through" : "none")};\"";
     }
 
     private static bool HasText(string? text) => !string.IsNullOrWhiteSpace(text);

@@ -9,7 +9,7 @@
     <ApplicationIcon>FastVitae.ico</ApplicationIcon>
     <Product>Fast Vitae</Product>
     <AssemblyTitle>Fast Vitae</AssemblyTitle>
-    <Version>1.1.0</Version>
+    <Version>1.1.1</Version>
   </PropertyGroup>
 
   <ItemGroup>

@@ -18,8 +18,9 @@ public partial class App : Application
         ShutdownMode = ShutdownMode.OnExplicitShutdown;
 
         Settings = AppSettings.Load();
+        Text.SetLanguage(Settings.Language != "" ? Settings.Language : Text.SystemLanguage());
         string folder = Settings.FullDataFolder;
-        string reason = folder != "" && !Directory.Exists(folder) ? $"The data folder was not found: {folder}" : "";
+        string reason = folder != "" && !Directory.Exists(folder) ? Text.Format("The data folder was not found: {0}", folder) : "";
         var info = new BasicInfo();
 
         // Ask until a profile exists
@@ -39,23 +40,81 @@ public partial class App : Application
                 Settings.LastProfile = newStore.SaveProfile(info);
                 setup.SavePictureChoice(newStore, Settings.LastProfile);
                 Settings.SetDataFolder(setup.DataFolder);
+                Settings.Language = Text.Language;
                 Settings.Save();
                 folder = Settings.FullDataFolder;
             }
             catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or ArgumentException)
             {
-                reason = "That folder could not be used: " + ex.Message;
+                reason = Text.Get("That folder could not be used:") + " " + ex.Message;
             }
         }
 
-        var store = new ProfileStore(folder);
-        var profiles = store.ListProfiles();
+        var profiles = new ProfileStore(folder).ListProfiles();
         string profile = profiles.Contains(Settings.LastProfile) ? Settings.LastProfile : profiles[0];
-
-        var home = new HomeWindow(store, profile);
-        MainWindow = home;
+        ShowHome(profile);
         ShutdownMode = ShutdownMode.OnMainWindowClose;
+    }
+
+    // Open Home with current settings
+    public static void ShowHome(string profile)
+    {
+        var store = new ProfileStore(Settings.FullDataFolder) { CvOutputRoot = Settings.CvOutputFolder };
+        var old = Current.MainWindow;
+        var home = new HomeWindow(store, profile);
+        Current.MainWindow = home;
         home.Show();
+        if (old != null && old != home && old.IsLoaded)
+            old.Close();
+    }
+
+    // Save settings, report failure
+    public static bool SaveSettings(Window owner)
+    {
+        try
+        {
+            Settings.Save();
+            return true;
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            MessageBox.Show(owner, Text.Get("The settings could not be saved:") + " " + ex.Message, "Fast Vitae");
+            return false;
+        }
+    }
+
+    // Pick and save a new picture
+    public static bool ChoosePicture(Window owner, ProfileStore store, string profile)
+    {
+        var dialog = new Microsoft.Win32.OpenFileDialog
+        {
+            Title = Text.Get("Choose your picture"),
+            Filter = Text.Get("Pictures") + "|*.jpg;*.jpeg;*.png;*.bmp|" + Text.Get("All files") + "|*.*"
+        };
+        if (dialog.ShowDialog(owner) != true)
+            return false;
+
+        try
+        {
+            store.SavePicture(profile, dialog.FileName);
+            return true;
+        }
+        catch (Exception ex) when (ex is NotSupportedException or IOException or UnauthorizedAccessException)
+        {
+            MessageBox.Show(owner, Text.Get("The picture could not be saved:") + " " + ex.Message, "Fast Vitae");
+            return false;
+        }
+    }
+
+    // Show a folder in Explorer
+    public static void OpenFolder(string folder)
+    {
+        if (!Directory.Exists(folder))
+        {
+            MessageBox.Show(Text.Get("The folder was not found:") + "\n" + folder, "Fast Vitae");
+            return;
+        }
+        System.Diagnostics.Process.Start("explorer.exe", "\"" + folder + "\"");
     }
 
     // Remember the last profile

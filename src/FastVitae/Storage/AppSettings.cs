@@ -10,6 +10,12 @@ public class AppSettings
     public string DataFolder { get; set; } = "";
     public string LastProfile { get; set; } = "";
 
+    // Empty: PDF and Word in data folder
+    public string CvOutputFolder { get; set; } = "";
+
+    // "es", "pt" or "en"
+    public string Language { get; set; } = "";
+
     private static string AppFolder => AppContext.BaseDirectory;
     private static string FilePath => Path.Combine(AppFolder, "settings.json");
 

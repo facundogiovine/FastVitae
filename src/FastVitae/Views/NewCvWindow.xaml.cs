@@ -37,14 +37,19 @@ public partial class NewCvWindow : Window
         ExistingCombo.SelectedIndex = 0;
         ExistingOption.IsEnabled = existingCvs.Count > 0;
 
-        if (!store.HasPicture(profile))
-        {
-            PictureOption.IsEnabled = false;
-            PictureOption.ToolTip = "Add a picture in Profile first";
-            ToolTipService.SetShowOnDisabled(PictureOption, true);
-        }
-
+        ShowPictureNote();
         Loaded += (s, e) => CompanyBox.Focus();
+    }
+
+    private void ShowPictureNote() =>
+        NoPictureNote.Visibility = store.HasPicture(profile) ? Visibility.Collapsed : Visibility.Visible;
+
+    // No picture yet: ask for one
+    private void PictureOption_Click(object sender, RoutedEventArgs e)
+    {
+        if (PictureOption.IsChecked == true && !store.HasPicture(profile) && !App.ChoosePicture(this, store, profile))
+            PictureOption.IsChecked = false;
+        ShowPictureNote();
     }
 
     private void FieldCombo_Changed(object sender, RoutedEventArgs e) => ShowSpecialties();
@@ -57,7 +62,7 @@ public partial class NewCvWindow : Window
         SpecialtyCombo.SelectedIndex = 0;
 
         SpecialtyOption.IsEnabled = specialties.Count > 0;
-        SpecialtyOption.ToolTip = specialties.Count > 0 ? null : "This Field has no Specialties yet";
+        SpecialtyOption.ToolTip = specialties.Count > 0 ? null : Text.Get("This Field has no Specialties yet");
         if (specialties.Count == 0 && SpecialtyOption.IsChecked == true)
             ScratchOption.IsChecked = true;
     }
@@ -66,13 +71,13 @@ public partial class NewCvWindow : Window
     {
         if (Company == "" || Role == "" || Field == "")
         {
-            MessageBox.Show(this, "Please enter the company, the role and the Field.", "Fast Vitae");
+            MessageBox.Show(this, Text.Get("Please enter the company, the role and the Field."), "Fast Vitae");
             return;
         }
 
         if (store.CvExists(profile, Company, Role))
         {
-            MessageBox.Show(this, "You already have a CV for this company and role. It will be opened.", "Fast Vitae");
+            MessageBox.Show(this, Text.Get("You already have a CV for this company and role. It will be opened."), "Fast Vitae");
             Document = store.LoadCv(profile, Company, Role);
             AlreadyExists = true;
             DialogResult = true;

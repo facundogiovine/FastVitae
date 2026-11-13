@@ -19,6 +19,7 @@ public partial class HomeWindow : Window
         InitializeComponent();
         this.store = store;
         this.profile = profile;
+        LanguageBox.SelectedValue = Text.Language;
         Refresh();
     }
 
@@ -35,8 +36,8 @@ public partial class HomeWindow : Window
 
     // ---- Applications tab ----
 
-    private const string AllFields = "All fields";
-    private const string AllStatuses = "All statuses";
+    private static string AllFields => Text.Get("All fields");
+    private static string AllStatuses => Text.Get("All statuses");
     private List<JobApplication> applications = new();
     private bool fillingFilters;
 
@@ -50,7 +51,7 @@ public partial class HomeWindow : Window
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidDataException)
         {
             applications = new List<JobApplication>();
-            MessageBox.Show(this, "The applications could not be read: " + ex.Message, "Fast Vitae");
+            MessageBox.Show(this, Text.Get("The applications could not be read:") + " " + ex.Message, "Fast Vitae");
         }
 
         // Keep the chosen filters
@@ -101,7 +102,7 @@ public partial class HomeWindow : Window
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
             MessageBox.Show(this,
-                "The status could not be saved. If the Excel file is open, close it and try again.\n\n" + ex.Message,
+                Text.Get("The status could not be saved. If the Excel file is open, close it and try again.") + "\n\n" + ex.Message,
                 "Fast Vitae", MessageBoxButton.OK, MessageBoxImage.Warning);
         }
         RefreshApplications();
@@ -116,10 +117,25 @@ public partial class HomeWindow : Window
         string path = Path.Combine(store.ProfileFolder(profile), application.CvPath);
         if (!File.Exists(path))
         {
-            MessageBox.Show(this, "The CV file was not found:\n" + path, "Fast Vitae");
+            MessageBox.Show(this, Text.Get("The CV file was not found:") + "\n" + path, "Fast Vitae");
             return;
         }
         Process.Start(new ProcessStartInfo(path) { UseShellExecute = true });
+    }
+
+    // Explorer with the PDF selected
+    private void ShowCvFile_Click(object sender, RoutedEventArgs e)
+    {
+        if (((FrameworkElement)sender).DataContext is not JobApplication application)
+            return;
+
+        string path = Path.GetFullPath(Path.Combine(store.ProfileFolder(profile), application.CvPath));
+        if (!File.Exists(path))
+        {
+            MessageBox.Show(this, Text.Get("The CV file was not found:") + "\n" + path, "Fast Vitae");
+            return;
+        }
+        Process.Start("explorer.exe", "/select,\"" + path + "\"");
     }
 
     // ---- CVs tab and toolbar ----
@@ -138,11 +154,22 @@ public partial class HomeWindow : Window
 
     private void Open_Click(object sender, RoutedEventArgs e)
     {
-        if (CvList.SelectedItem is not CvListItem item)
-            return;
+        if (CvList.SelectedItem is CvListItem item)
+            OpenCv(item);
+    }
+
+    // Pencil on the clicked row
+    private void EditCv_Click(object sender, RoutedEventArgs e)
+    {
+        if (((FrameworkElement)sender).DataContext is CvListItem item)
+            OpenCv(item);
+    }
+
+    private void OpenCv(CvListItem item)
+    {
         if (item.Unreadable)
         {
-            MessageBox.Show(this, "This file could not be read, so it was left untouched:\n" + item.Path, "Fast Vitae");
+            MessageBox.Show(this, Text.Get("This file could not be read, so it was left untouched:") + "\n" + item.Path, "Fast Vitae");
             return;
         }
 
@@ -153,10 +180,30 @@ public partial class HomeWindow : Window
         Refresh();
     }
 
+    // Folder of the clicked row
     private void OpenFolder_Click(object sender, RoutedEventArgs e)
     {
-        if (CvList.SelectedItem is CvListItem item)
-            Process.Start("explorer.exe", "\"" + Path.GetDirectoryName(item.Path) + "\"");
+        if (((FrameworkElement)sender).DataContext is CvListItem item)
+            App.OpenFolder(store.FolderToShow(profile, item.Company));
+    }
+
+    private void OpenCvsFolder_Click(object sender, RoutedEventArgs e) => App.OpenFolder(store.OutputRoot(profile));
+
+    private void Language_Changed(object sender, SelectionChangedEventArgs e)
+    {
+        if (!IsLoaded || LanguageBox.SelectedValue is not string code || code == Text.Language)
+            return;
+        Text.SetLanguage(code);
+        App.Settings.Language = code;
+        App.SaveSettings(this);
+        Refresh();
+    }
+
+    private void SaveLocation_Click(object sender, RoutedEventArgs e)
+    {
+        var dialog = new SaveLocationWindow { Owner = this };
+        if (dialog.ShowDialog() == true)
+            App.ShowHome(profile);
     }
 
     private void Fields_Click(object sender, RoutedEventArgs e)
@@ -171,7 +218,7 @@ public partial class HomeWindow : Window
         var dialog = new SetupWindow(info, dataFolder: null, currentPicture: store.PicturePath(profile))
         {
             Owner = this,
-            Title = "Fast Vitae - Profile"
+            Title = Text.Get("Fast Vitae - Profile")
         };
         if (dialog.ShowDialog() != true)
             return;
@@ -184,7 +231,7 @@ public partial class HomeWindow : Window
             {
                 if (store.ListProfiles().Contains(newName, StringComparer.OrdinalIgnoreCase))
                 {
-                    MessageBox.Show(this, $"There is already a profile called {newName}.", "Fast Vitae");
+                    MessageBox.Show(this, Text.Format("There is already a profile called {0}.", newName), "Fast Vitae");
                     return;
                 }
                 store.RenameProfile(profile, newName);
@@ -195,7 +242,7 @@ public partial class HomeWindow : Window
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
-            MessageBox.Show(this, "The profile could not be saved: " + ex.Message, "Fast Vitae");
+            MessageBox.Show(this, Text.Get("The profile could not be saved:") + " " + ex.Message, "Fast Vitae");
         }
         Refresh();
     }
@@ -212,11 +259,11 @@ public partial class HomeWindow : Window
         }
         menu.Items.Add(new Separator());
 
-        var add = new MenuItem { Header = "Add profile..." };
+        var add = new MenuItem { Header = Text.Get("Add profile...") };
         add.Click += (s, a) => AddProfile();
         menu.Items.Add(add);
 
-        var delete = new MenuItem { Header = $"Delete {profile}..." };
+        var delete = new MenuItem { Header = Text.Format("Delete {0}...", profile) };
         delete.Click += (s, a) => DeleteProfile();
         menu.Items.Add(delete);
 
@@ -233,13 +280,13 @@ public partial class HomeWindow : Window
     private void AddProfile()
     {
         var info = new BasicInfo();
-        var dialog = new SetupWindow(info, dataFolder: null) { Owner = this, Title = "Fast Vitae - New profile" };
+        var dialog = new SetupWindow(info, dataFolder: null) { Owner = this, Title = Text.Get("Fast Vitae - New profile") };
         if (dialog.ShowDialog() != true)
             return;
 
         if (store.ListProfiles().Contains(NameCleaner.Clean(info.FullName), StringComparer.OrdinalIgnoreCase))
         {
-            MessageBox.Show(this, $"There is already a profile called {info.FullName}.", "Fast Vitae");
+            MessageBox.Show(this, Text.Format("There is already a profile called {0}.", info.FullName), "Fast Vitae");
             return;
         }
         string added = store.SaveProfile(info);
@@ -252,12 +299,12 @@ public partial class HomeWindow : Window
         var others = store.ListProfiles().Where(name => name != profile).ToList();
         if (others.Count == 0)
         {
-            MessageBox.Show(this, "This is the only profile. Add another one before deleting it.", "Fast Vitae");
+            MessageBox.Show(this, Text.Get("This is the only profile. Add another one before deleting it."), "Fast Vitae");
             return;
         }
 
         var answer = MessageBox.Show(this,
-            $"Delete the profile {profile} with all its CVs and Fields? This cannot be undone.",
+            Text.Format("Delete the profile {0} with all its CVs and Fields? This cannot be undone.", profile),
             "Fast Vitae", MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No);
         if (answer != MessageBoxResult.Yes)
             return;

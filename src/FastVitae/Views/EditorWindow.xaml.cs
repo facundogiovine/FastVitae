@@ -39,7 +39,10 @@ public partial class EditorWindow : Window
         var window = new EditorWindow(store, profile, doc) { company = company, role = role };
         window.Title = $"Fast Vitae - {company} - {role}";
         if (alreadyCreated)
+        {
             window.savedJson = window.CurrentJson();
+            window.OpenFolderButton.Visibility = Visibility.Visible;
+        }
         return window;
     }
 
@@ -51,10 +54,10 @@ public partial class EditorWindow : Window
 
         // Hide the CV-only parts
         window.BasicInfoExpander.Visibility = Visibility.Collapsed;
-        window.PictureOption.Visibility = Visibility.Collapsed;
+        window.PicturePanel.Visibility = Visibility.Collapsed;
         window.SaveToSpecialtyButton.Visibility = Visibility.Collapsed;
-        window.CreateButton.Content = "Save";
-        window.CreateButton.ToolTip = "Save this content";
+        window.CreateButton.Content = Text.Get("Save");
+        window.CreateButton.ToolTip = Text.Get("Save this content");
         return window;
     }
 
@@ -65,12 +68,7 @@ public partial class EditorWindow : Window
         this.profile = profile;
         this.doc = doc;
         DataContext = doc;
-
-        if (!store.HasPicture(profile))
-        {
-            PictureOption.IsEnabled = false;
-            PictureOption.ToolTip = "Add a picture in Profile first";
-        }
+        ShowPictureNote();
 
         // Redraw shortly after typing
         previewTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(250) };
@@ -82,6 +80,7 @@ public partial class EditorWindow : Window
 
         // Text changes refresh the preview
         FormPanel.AddHandler(TextBoxBase.TextChangedEvent, new RoutedEventHandler((s, e) => ContentChanged()));
+        FormPanel.AddHandler(Selector.SelectionChangedEvent, new RoutedEventHandler((s, e) => ContentChanged()));
         Loaded += async (s, e) => await StartPreview();
     }
 
@@ -122,7 +121,7 @@ public partial class EditorWindow : Window
         catch (Exception ex) when (ex is WebView2RuntimeNotFoundException or IOException or UnauthorizedAccessException)
         {
             Preview.Visibility = Visibility.Collapsed;
-            PreviewError.Text = "The preview and the PDF need the Microsoft Edge WebView2 Runtime, which was not found on this PC.";
+            PreviewError.Text = Text.Get("The preview and the PDF need the Microsoft Edge WebView2 Runtime, which was not found on this PC.");
             PreviewError.Visibility = Visibility.Visible;
         }
     }
@@ -148,7 +147,24 @@ public partial class EditorWindow : Window
 
     // ---- Form buttons ----
 
-    private void PictureOption_Click(object sender, RoutedEventArgs e) => ContentChanged();
+    private void ShowPictureNote() =>
+        NoPictureNote.Visibility = store.HasPicture(profile) ? Visibility.Collapsed : Visibility.Visible;
+
+    // No picture yet: ask for one
+    private void PictureOption_Click(object sender, RoutedEventArgs e)
+    {
+        if (doc.ShowPicture && !store.HasPicture(profile) && !App.ChoosePicture(this, store, profile))
+            PictureOption.IsChecked = false;
+        ShowPictureNote();
+        ContentChanged();
+    }
+
+    private void ChangePicture_Click(object sender, RoutedEventArgs e)
+    {
+        if (App.ChoosePicture(this, store, profile))
+            ContentChanged();
+        ShowPictureNote();
+    }
 
     private void Country_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e) => ContentChanged();
 
@@ -212,6 +228,82 @@ public partial class EditorWindow : Window
         ContentChanged();
     }
 
+    private void AddColumn_Click(object sender, RoutedEventArgs e)
+    {
+        var section = ItemOf<Section>(sender);
+        if (section.Columns.Count >= Section.MaxColumns)
+            return;
+        section.Columns.Add(new BulletColumn());
+        ContentChanged();
+    }
+
+    private void RemoveColumn_Click(object sender, RoutedEventArgs e)
+    {
+        var column = ItemOf<BulletColumn>(sender);
+        doc.Sections.First(section => section.Columns.Contains(column)).Columns.Remove(column);
+        ContentChanged();
+    }
+
+    private void AddColumnEntry_Click(object sender, RoutedEventArgs e)
+    {
+        ItemOf<BulletColumn>(sender).Entries.Add(new ColumnEntry());
+        ContentChanged();
+    }
+
+    private void RemoveColumnEntry_Click(object sender, RoutedEventArgs e)
+    {
+        var entry = ItemOf<ColumnEntry>(sender);
+        doc.Sections.SelectMany(section => section.Columns).First(column => column.Entries.Contains(entry)).Entries.Remove(entry);
+        ContentChanged();
+    }
+
+    private void OpenFolder_Click(object sender, RoutedEventArgs e) => App.OpenFolder(store.FolderToShow(profile, company));
+
+    // Format window for one field
+    public void EditStyle(System.Windows.Controls.Control box, string key)
+    {
+        var styles = box.DataContext switch
+        {
+            Role role => role.Styles,
+            Entry entry => entry.Styles,
+            Section section => section.Styles,
+            ColumnEntry bullet => bullet.Styles,
+            _ => doc.Styles
+        };
+        var start = styles.TryGetValue(key, out var saved) ? saved.Copy() : TextStyle.DefaultFor(key);
+        string sample = box switch
+        {
+            System.Windows.Controls.TextBox textBox => textBox.Text,
+            System.Windows.Controls.ComboBox => ((Role)box.DataContext).Dates,
+            _ => ""
+        };
+
+        // Open just below the box
+        var dialog = new StyleWindow(key, start, sample) { Owner = this };
+        var corner = box.PointToScreen(new Point(0, box.ActualHeight + 4));
+        var source = PresentationSource.FromVisual(box);
+        if (source?.CompositionTarget != null)
+            corner = source.CompositionTarget.TransformFromDevice.Transform(corner);
+        dialog.Left = corner.X;
+        dialog.Top = corner.Y;
+
+        if (dialog.ShowDialog() != true)
+            return;
+        // Every entry or role, or one
+        var targets = !dialog.ApplyToAll ? new List<Dictionary<string, TextStyle>> { styles }
+            : key is "EntryName" or "Place"
+                ? doc.Sections.SelectMany(s => s.Entries).Select(en => en.Styles).ToList()
+                : doc.Sections.SelectMany(s => s.Entries).SelectMany(en => en.Roles).Select(r => r.Styles).ToList();
+        foreach (var target in targets)
+        {
+            if (dialog.Result == null)
+                target.Remove(key);
+            else
+                target[key] = dialog.Result.Copy();
+        }
+        ContentChanged();
+    }
+
     // Item behind the clicked button
     private static T ItemOf<T>(object button) => (T)((FrameworkElement)button).DataContext;
 
@@ -224,12 +316,13 @@ public partial class EditorWindow : Window
             if (IsSpecialty)
             {
                 store.SaveSpecialty(profile, field, specialty, doc);
-                StatusText.Text = "Saved";
+                StatusText.Text = Text.Get("Saved");
             }
             else
             {
                 string pdfPath = await CreateCvFiles();
-                StatusText.Text = "Created in " + store.CvFolder(profile, company);
+                StatusText.Text = Text.Get("Created in") + " " + store.OutputFolder(profile, company);
+                OpenFolderButton.Visibility = Visibility.Visible;
                 RecordApplication(pdfPath);
             }
             savedJson = CurrentJson();
@@ -237,7 +330,7 @@ public partial class EditorWindow : Window
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
             MessageBox.Show(this,
-                "The files could not be written. If the PDF or Word file is open in another program, close it and try again.\n\n" + ex.Message,
+                Text.Get("The files could not be written. If the PDF or Word file is open in another program, close it and try again.") + "\n\n" + ex.Message,
                 "Fast Vitae", MessageBoxButton.OK, MessageBoxImage.Warning);
         }
     }
@@ -254,7 +347,7 @@ public partial class EditorWindow : Window
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
             MessageBox.Show(this,
-                "The CV was created, but the applications list could not be updated. If its Excel file is open, close it and click Create again.\n\n" + ex.Message,
+                Text.Get("The CV was created, but the applications list could not be updated. If its Excel file is open, close it and click Create again.") + "\n\n" + ex.Message,
                 "Fast Vitae", MessageBoxButton.OK, MessageBoxImage.Warning);
         }
     }
@@ -264,12 +357,13 @@ public partial class EditorWindow : Window
     {
         store.SaveCv(profile, company, role, doc);
 
-        string folder = store.CvFolder(profile, company);
+        string folder = store.OutputFolder(profile, company);
+        Directory.CreateDirectory(folder);
         string fileName = NameCleaner.Clean($"{doc.BasicInfo.FullName} - {role}");
         DocxWriter.Write(doc, Path.Combine(folder, fileName + ".docx"), store.PicturePath(profile));
 
         if (!previewReady)
-            throw new IOException("The PDF was not created because the preview is not available. The Word file was created.");
+            throw new IOException(Text.Get("The PDF was not created because the preview is not available. The Word file was created."));
 
         // Print the up-to-date preview
         previewTimer.Stop();
@@ -288,7 +382,7 @@ public partial class EditorWindow : Window
         string pdfPath = Path.Combine(folder, fileName + ".pdf");
         bool printed = await Preview.CoreWebView2.PrintToPdfAsync(pdfPath, settings);
         if (!printed)
-            throw new IOException("The PDF could not be written: " + pdfPath);
+            throw new IOException(Text.Get("The PDF could not be written:") + " " + pdfPath);
         return pdfPath;
     }
 
@@ -301,11 +395,11 @@ public partial class EditorWindow : Window
         try
         {
             store.SaveSpecialty(profile, dialog.Field, dialog.Specialty, doc.Copy());
-            StatusText.Text = $"Saved to {dialog.Field} - {dialog.Specialty}";
+            StatusText.Text = Text.Format("Saved to {0} - {1}", dialog.Field, dialog.Specialty);
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
-            MessageBox.Show(this, "The Specialty could not be saved: " + ex.Message, "Fast Vitae");
+            MessageBox.Show(this, Text.Get("The Specialty could not be saved:") + " " + ex.Message, "Fast Vitae");
         }
     }
 
@@ -315,8 +409,8 @@ public partial class EditorWindow : Window
             return;
 
         string question = IsSpecialty
-            ? "Your changes were not saved. Close anyway?"
-            : "This CV has changes that were not created. Close anyway?";
+            ? Text.Get("Your changes were not saved. Close anyway?")
+            : Text.Get("This CV has changes that were not created. Close anyway?");
         var answer = MessageBox.Show(this, question, "Fast Vitae",
             MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.No);
         e.Cancel = answer != MessageBoxResult.Yes;

@@ -18,7 +18,7 @@ public partial class AddSectionWindow : Window
     {
         if (TitleBox.Text.Trim() == "")
         {
-            MessageBox.Show(this, "Please enter a title.", "Fast Vitae");
+            MessageBox.Show(this, Text.Get("Please enter a title."), "Fast Vitae");
             return;
         }
 
@@ -27,6 +27,8 @@ public partial class AddSectionWindow : Window
             Title = TitleBox.Text.Trim(),
             Layout = ColumnsOption.IsChecked == true ? SectionLayout.BulletColumns : SectionLayout.Entries
         };
+        if (Section.Layout == SectionLayout.BulletColumns)
+            Section.Columns.Add(new BulletColumn());
         DialogResult = true;
     }
 }

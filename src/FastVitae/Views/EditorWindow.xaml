@@ -1,63 +1,116 @@
 <Window x:Class="FastVitae.Views.EditorWindow"
+        Background="{StaticResource PanelBrush}"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:views="clr-namespace:FastVitae.Views"
+        xmlns:model="clr-namespace:FastVitae.Model"
         xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
         Title="Fast Vitae" Width="1320" Height="820" MinWidth="900" MinHeight="500"
         WindowStartupLocation="CenterOwner" Closing="Window_Closing">
     <Window.Resources>
         <views:BulletLinesConverter x:Key="BulletLines"/>
 
+        <!-- Month or year dropdown -->
+        <Style x:Key="DateCombo" TargetType="ComboBox" BasedOn="{StaticResource DefaultComboBoxStyle}">
+            <Setter Property="MinWidth" Value="0"/>
+            <Setter Property="MaxDropDownHeight" Value="300"/>
+            <Setter Property="ItemTemplate" Value="{StaticResource TranslatedItem}"/>
+        </Style>
+
         <!-- One role -->
         <DataTemplate x:Key="RoleTemplate">
             <StackPanel Margin="0,8,0,0">
                 <DockPanel>
-                    <Button Content="✕" Style="{StaticResource Small}" DockPanel.Dock="Right" Click="RemoveRole_Click" ToolTip="Remove this role"/>
-                    <TextBox Text="{Binding Dates, UpdateSourceTrigger=PropertyChanged}" DockPanel.Dock="Right" Width="170" Margin="6,0,0,0" ToolTip="Dates, for example: October 2022 - Present"/>
-                    <TextBox Text="{Binding Title, UpdateSourceTrigger=PropertyChanged}" ToolTip="Job title, degree or role"/>
+                    <Button Content="✕" Style="{StaticResource Small}" DockPanel.Dock="Right" Click="RemoveRole_Click" ToolTip="{views:T 'Remove this role'}"/>
+                    <TextBox views:Format.Key="RoleTitle" Text="{Binding Title, UpdateSourceTrigger=PropertyChanged}" views:Hint.Text="{views:T 'Job title or degree'}"/>
                 </DockPanel>
-                <TextBox Text="{Binding Bullets, Converter={StaticResource BulletLines}, UpdateSourceTrigger=PropertyChanged}"
+                <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                    <ComboBox views:Format.Key="Dates" Style="{StaticResource DateCombo}" Width="118" ItemsSource="{x:Static model:Role.Months}"
+                              SelectedItem="{Binding StartMonth}" views:Hint.Text="{views:T 'Month'}" ToolTip="{views:T 'Start month'}"/>
+                    <ComboBox views:Format.Key="Dates" Style="{StaticResource DateCombo}" Width="88" Margin="4,0,0,0" ItemsSource="{x:Static model:Role.Years}"
+                              SelectedItem="{Binding StartYear}" views:Hint.Text="{views:T 'Year'}" ToolTip="{views:T 'Start year'}"/>
+                    <TextBlock Text="–" VerticalAlignment="Center" Margin="8,0"/>
+                    <ComboBox views:Format.Key="Dates" x:Name="EndMonthBox" Style="{StaticResource DateCombo}" Width="118" ItemsSource="{x:Static model:Role.Months}"
+                              SelectedItem="{Binding EndMonth}" views:Hint.Text="{views:T 'Month'}" ToolTip="{views:T 'End month'}"/>
+                    <ComboBox views:Format.Key="Dates" Style="{StaticResource DateCombo}" Width="100" Margin="4,0,0,0" ItemsSource="{x:Static model:Role.EndYears}"
+                              SelectedItem="{Binding EndYear}" views:Hint.Text="{views:T 'Year'}" ToolTip="{views:T 'End year, or Present'}"/>
+                </StackPanel>
+                <TextBox views:Format.Key="Bullets" Text="{Binding Bullets, Converter={StaticResource BulletLines}, UpdateSourceTrigger=PropertyChanged}"
                          AcceptsReturn="True" TextWrapping="Wrap" MinHeight="64" Margin="0,4,0,0"
-                         ToolTip="One bullet per line"/>
+                         views:Hint.Text="{views:T 'Bullets, one per line'}"/>
             </StackPanel>
+            <DataTemplate.Triggers>
+                <DataTrigger Binding="{Binding EndYear}" Value="Present">
+                    <Setter TargetName="EndMonthBox" Property="IsEnabled" Value="False"/>
+                </DataTrigger>
+            </DataTemplate.Triggers>
         </DataTemplate>
 
         <!-- One entry with roles -->
         <DataTemplate x:Key="EntryTemplate">
-            <Border BorderBrush="#DDDDDD" BorderThickness="0,1,0,0" Margin="0,10,0,0" Padding="0,10,0,0">
+            <Border BorderBrush="{StaticResource LineBrush}" BorderThickness="0,1,0,0" Margin="0,10,0,0" Padding="0,10,0,0">
                 <StackPanel>
                     <DockPanel>
-                        <Button Content="✕" Style="{StaticResource Small}" DockPanel.Dock="Right" Click="RemoveEntry_Click" ToolTip="Remove this entry"/>
-                        <TextBox Text="{Binding Place, UpdateSourceTrigger=PropertyChanged}" DockPanel.Dock="Right" Width="170" Margin="6,0,0,0" ToolTip="Place, for example: Asuncion, Paraguay"/>
-                        <TextBox Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}" FontWeight="SemiBold" ToolTip="Company, school or project name"/>
+                        <Button Content="✕" Style="{StaticResource Small}" DockPanel.Dock="Right" Click="RemoveEntry_Click" ToolTip="{views:T 'Remove this entry'}"/>
+                        <TextBox views:Format.Key="Place" Text="{Binding Place, UpdateSourceTrigger=PropertyChanged}" DockPanel.Dock="Right" Width="170" Margin="6,0,0,0" views:Hint.Text="{views:T 'City, country'}"/>
+                        <TextBox views:Format.Key="EntryName" Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}" FontWeight="SemiBold" views:Hint.Text="{views:T 'Company, school or project'}"/>
                     </DockPanel>
                     <ItemsControl ItemsSource="{Binding Roles}" ItemTemplate="{StaticResource RoleTemplate}"/>
-                    <Button Content="+ Role" HorizontalAlignment="Left" Margin="0,6,0,0" Padding="8,2" Click="AddRole_Click"
-                            ToolTip="Add another role in the same place"/>
+                    <Button Content="{views:T '+ Role'}" HorizontalAlignment="Left" Margin="0,6,0,0" Padding="8,2" Click="AddRole_Click"
+                            ToolTip="{views:T 'Add another role in the same place'}"/>
+                </StackPanel>
+            </Border>
+        </DataTemplate>
+
+        <!-- One bullet column -->
+        <DataTemplate x:Key="ColumnTemplate">
+            <Border Background="{StaticResource InsetBrush}" BorderBrush="{StaticResource LineBrush}" BorderThickness="1" CornerRadius="3" Padding="6" Margin="0,8,6,0">
+                <StackPanel>
+                    <Button Content="✕" Style="{StaticResource Small}" HorizontalAlignment="Right" Click="RemoveColumn_Click" ToolTip="{views:T 'Remove this column'}"/>
+                    <ItemsControl ItemsSource="{Binding Entries}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <DockPanel Margin="0,4,0,0">
+                                    <Button Content="✕" Style="{StaticResource Small}" DockPanel.Dock="Right" Click="RemoveColumnEntry_Click" ToolTip="{views:T 'Remove this bullet'}"/>
+                                    <TextBox views:Format.Key="Bullet" Text="{Binding Text, UpdateSourceTrigger=PropertyChanged}" TextWrapping="Wrap" views:Hint.Text="{views:T 'Bullet'}"/>
+                                </DockPanel>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    <Button Content="{views:T '+ Entry'}" HorizontalAlignment="Left" Margin="0,6,0,0" Padding="8,2" Click="AddColumnEntry_Click"
+                            ToolTip="{views:T 'Add a bullet to this column'}"/>
                 </StackPanel>
             </Border>
         </DataTemplate>
 
         <!-- One section -->
         <DataTemplate x:Key="SectionTemplate">
-            <Border Background="White" BorderBrush="#CCCCCC" BorderThickness="1" CornerRadius="4" Padding="12" Margin="0,0,0,12">
+            <Border Background="{StaticResource CardBrush}" BorderBrush="{StaticResource LineBrush}" BorderThickness="1" CornerRadius="4" Padding="12" Margin="0,0,0,12">
                 <StackPanel>
                     <DockPanel>
-                        <Button Content="✕" Style="{StaticResource Small}" DockPanel.Dock="Right" Click="RemoveSection_Click" ToolTip="Remove this section"/>
-                        <Button Content="▼" Style="{StaticResource Small}" DockPanel.Dock="Right" Click="MoveSectionDown_Click" ToolTip="Move down"/>
-                        <Button Content="▲" Style="{StaticResource Small}" DockPanel.Dock="Right" Click="MoveSectionUp_Click" ToolTip="Move up"/>
-                        <TextBox Text="{Binding Title, UpdateSourceTrigger=PropertyChanged}" FontWeight="Bold" ToolTip="Section title"/>
+                        <Button Content="✕" Style="{StaticResource Small}" DockPanel.Dock="Right" Click="RemoveSection_Click" ToolTip="{views:T 'Remove this section'}"/>
+                        <Button Content="▼" Style="{StaticResource Small}" DockPanel.Dock="Right" Click="MoveSectionDown_Click" ToolTip="{views:T 'Move down'}"/>
+                        <Button Content="▲" Style="{StaticResource Small}" DockPanel.Dock="Right" Click="MoveSectionUp_Click" ToolTip="{views:T 'Move up'}"/>
+                        <TextBox views:Format.Key="SectionTitle" Text="{Binding Title, UpdateSourceTrigger=PropertyChanged}" FontWeight="Bold" ToolTip="{views:T 'Section title'}"/>
                     </DockPanel>
 
-                    <TextBox x:Name="ColumnsEditor" Visibility="Collapsed"
-                             Text="{Binding Bullets, Converter={StaticResource BulletLines}, UpdateSourceTrigger=PropertyChanged}"
-                             AcceptsReturn="True" TextWrapping="Wrap" MinHeight="96" Margin="0,8,0,0"
-                             ToolTip="One bullet per line. They are printed in three columns."/>
+                    <StackPanel x:Name="ColumnsEditor" Visibility="Collapsed">
+                        <ItemsControl ItemsSource="{Binding Columns}" ItemTemplate="{StaticResource ColumnTemplate}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <UniformGrid Rows="1"/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                        </ItemsControl>
+                        <Button x:Name="AddColumnButton" Content="{views:T '+ Column'}" HorizontalAlignment="Left" Margin="0,10,0,0" Padding="8,2" Click="AddColumn_Click"
+                                ToolTip="{views:T 'Add a column, up to four'}" ToolTipService.ShowOnDisabled="True"/>
+                    </StackPanel>
 
                     <StackPanel x:Name="EntriesEditor">
                         <ItemsControl ItemsSource="{Binding Entries}" ItemTemplate="{StaticResource EntryTemplate}"/>
-                        <Button Content="+ Entry" HorizontalAlignment="Left" Margin="0,10,0,0" Padding="8,2" Click="AddEntry_Click"
-                                ToolTip="Add a company, school or project"/>
+                        <Border BorderBrush="{StaticResource LineBrush}" BorderThickness="0,1,0,0" Margin="0,10,0,0"/>
+                        <Button Content="{views:T '+ Entry'}" HorizontalAlignment="Left" Margin="0,10,0,0" Padding="8,2" Click="AddEntry_Click"
+                                ToolTip="{views:T 'Add a company, school or project'}"/>
                     </StackPanel>
                 </StackPanel>
             </Border>
@@ -66,32 +119,37 @@
                     <Setter TargetName="ColumnsEditor" Property="Visibility" Value="Visible"/>
                     <Setter TargetName="EntriesEditor" Property="Visibility" Value="Collapsed"/>
                 </DataTrigger>
+                <DataTrigger Binding="{Binding Columns.Count}" Value="4">
+                    <Setter TargetName="AddColumnButton" Property="IsEnabled" Value="False"/>
+                </DataTrigger>
             </DataTemplate.Triggers>
         </DataTemplate>
     </Window.Resources>
 
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="500" MinWidth="380"/>
+            <ColumnDefinition Width="540" MinWidth="420"/>
             <ColumnDefinition Width="5"/>
             <ColumnDefinition Width="*" MinWidth="300"/>
         </Grid.ColumnDefinitions>
 
         <!-- Left: the form. -->
-        <DockPanel Grid.Column="0" Background="#F4F5F7">
-            <Border DockPanel.Dock="Bottom" BorderBrush="#CCCCCC" BorderThickness="0,1,0,0" Padding="12,10">
+        <DockPanel Grid.Column="0" Background="{StaticResource PanelBrush}">
+            <Border DockPanel.Dock="Bottom" BorderBrush="{StaticResource LineBrush}" BorderThickness="0,1,0,0" Padding="12,10">
                 <DockPanel>
-                    <Button x:Name="CreateButton" Content="Create" Style="{StaticResource Primary}" DockPanel.Dock="Right" Margin="0" Click="Create_Click"
-                            ToolTip="Write the CV as PDF and Word into the company folder"/>
-                    <Button x:Name="SaveToSpecialtyButton" Content="Save to Specialty" DockPanel.Dock="Left" Click="SaveToSpecialty_Click"
-                            ToolTip="Keep this content so new CVs can start from it"/>
-                    <TextBlock x:Name="StatusText" VerticalAlignment="Center" Margin="6,0" TextTrimming="CharacterEllipsis" Foreground="#2E7D32"/>
+                    <Button x:Name="CreateButton" Content="{views:T 'Create'}" Style="{StaticResource Primary}" DockPanel.Dock="Right" Margin="0" Click="Create_Click"
+                            ToolTip="{views:T 'Write the CV as PDF and Word into the company folder'}"/>
+                    <Button x:Name="OpenFolderButton" Style="{StaticResource FolderButton}" DockPanel.Dock="Right" Margin="0,0,8,0"
+                            Click="OpenFolder_Click" Visibility="Collapsed" ToolTip="{views:T 'Open in folder'}"/>
+                    <Button x:Name="SaveToSpecialtyButton" Content="{views:T 'Save to Specialty'}" DockPanel.Dock="Left" Click="SaveToSpecialty_Click"
+                            ToolTip="{views:T 'Keep this content so new CVs can start from it'}"/>
+                    <TextBlock x:Name="StatusText" VerticalAlignment="Center" Margin="6,0" TextTrimming="CharacterEllipsis" Foreground="{StaticResource SuccessBrush}"/>
                 </DockPanel>
             </Border>
 
             <ScrollViewer VerticalScrollBarVisibility="Auto">
                 <StackPanel x:Name="FormPanel" Margin="12">
-                    <Expander x:Name="BasicInfoExpander" Header="Basic info" Margin="0,0,0,8">
+                    <Expander x:Name="BasicInfoExpander" Header="{views:T 'Basic info'}" Margin="0,0,0,8">
                         <StackPanel DataContext="{Binding BasicInfo}" Margin="0,0,0,8">
                             <Grid>
                                 <Grid.ColumnDefinitions>
@@ -100,18 +158,18 @@
                                     <ColumnDefinition/>
                                 </Grid.ColumnDefinitions>
                                 <StackPanel Grid.Column="0">
-                                    <TextBlock Text="First name" Style="{StaticResource Label}"/>
-                                    <TextBox Text="{Binding FirstName, UpdateSourceTrigger=PropertyChanged}"/>
+                                    <TextBlock Text="{views:T 'First name'}" Style="{StaticResource Label}"/>
+                                    <TextBox views:Format.Key="Name" Text="{Binding FirstName, UpdateSourceTrigger=PropertyChanged}"/>
                                 </StackPanel>
                                 <StackPanel Grid.Column="2">
-                                    <TextBlock Text="Last name" Style="{StaticResource Label}"/>
-                                    <TextBox Text="{Binding LastName, UpdateSourceTrigger=PropertyChanged}"/>
+                                    <TextBlock Text="{views:T 'Last name'}" Style="{StaticResource Label}"/>
+                                    <TextBox views:Format.Key="Name" Text="{Binding LastName, UpdateSourceTrigger=PropertyChanged}"/>
                                 </StackPanel>
                             </Grid>
-                            <TextBlock Text="Title" Style="{StaticResource Label}"/>
-                            <TextBox Text="{Binding Title, UpdateSourceTrigger=PropertyChanged}"/>
-                            <TextBlock Text="Location" Style="{StaticResource Label}"/>
-                            <TextBox Text="{Binding Location, UpdateSourceTrigger=PropertyChanged}"/>
+                            <TextBlock Text="{views:T 'Title'}" Style="{StaticResource Label}"/>
+                            <TextBox views:Format.Key="Title" Text="{Binding Title, UpdateSourceTrigger=PropertyChanged}"/>
+                            <TextBlock Text="{views:T 'Location'}" Style="{StaticResource Label}"/>
+                            <TextBox views:Format.Key="Contact" Text="{Binding Location, UpdateSourceTrigger=PropertyChanged}"/>
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto"/>
@@ -119,45 +177,50 @@
                                     <ColumnDefinition/>
                                 </Grid.ColumnDefinitions>
                                 <StackPanel Grid.Column="0">
-                                    <TextBlock Text="Country code" Style="{StaticResource Label}"/>
+                                    <TextBlock Text="{views:T 'Country code'}" Style="{StaticResource Label}"/>
                                     <ComboBox Style="{StaticResource CountryCombo}" SelectedValue="{Binding Country}" SelectionChanged="Country_SelectionChanged"/>
                                 </StackPanel>
                                 <StackPanel Grid.Column="2">
-                                    <TextBlock Text="Phone number" Style="{StaticResource Label}"/>
-                                    <TextBox Text="{Binding Phone, UpdateSourceTrigger=PropertyChanged}"/>
+                                    <TextBlock Text="{views:T 'Phone number'}" Style="{StaticResource Label}"/>
+                                    <TextBox views:Format.Key="Contact" Text="{Binding Phone, UpdateSourceTrigger=PropertyChanged}"/>
                                 </StackPanel>
                             </Grid>
-                            <TextBlock Text="Email address" Style="{StaticResource Label}"/>
-                            <TextBox Text="{Binding Email, UpdateSourceTrigger=PropertyChanged}"/>
-                            <TextBlock Text="LinkedIn link" Style="{StaticResource Label}"/>
-                            <TextBox Text="{Binding LinkedIn, UpdateSourceTrigger=PropertyChanged}"/>
+                            <TextBlock Text="{views:T 'Email address'}" Style="{StaticResource Label}"/>
+                            <TextBox views:Format.Key="Contact" Text="{Binding Email, UpdateSourceTrigger=PropertyChanged}"/>
+                            <TextBlock Text="{views:T 'LinkedIn link'}" Style="{StaticResource Label}"/>
+                            <TextBox views:Format.Key="Contact" Text="{Binding LinkedIn, UpdateSourceTrigger=PropertyChanged}"/>
                         </StackPanel>
                     </Expander>
 
-                    <CheckBox x:Name="PictureOption" Content="Picture" IsChecked="{Binding ShowPicture}" Margin="0,0,0,10"
-                              Click="PictureOption_Click" ToolTipService.ShowOnDisabled="True"
-                              ToolTip="Name and title on the left, your picture on the right"/>
+                    <StackPanel x:Name="PicturePanel" Orientation="Horizontal" Margin="0,0,0,10">
+                        <CheckBox x:Name="PictureOption" Content="{views:T 'Picture'}" IsChecked="{Binding ShowPicture}" VerticalAlignment="Center" MinWidth="0"
+                                  Click="PictureOption_Click"
+                                  ToolTip="{views:T 'Name and title on the left, your picture on the right'}"/>
+                        <Button Content="{views:T 'Change picture...'}" Margin="12,0,0,0" Padding="8,2" Click="ChangePicture_Click"/>
+                        <TextBlock x:Name="NoPictureNote" Text="{views:T 'Your profile has no picture, so you will need to provide one.'}"
+                                   Foreground="{StaticResource MutedTextBrush}" VerticalAlignment="Center" TextWrapping="Wrap" MaxWidth="260" Margin="12,0,0,0"/>
+                    </StackPanel>
 
-                    <Expander Header="Summary" IsExpanded="True" Margin="0,0,0,12">
-                        <TextBox Text="{Binding Summary, UpdateSourceTrigger=PropertyChanged}"
+                    <Expander Header="{views:T 'Summary'}" IsExpanded="True" Margin="0,0,0,12">
+                        <TextBox views:Format.Key="Summary" Text="{Binding Summary, UpdateSourceTrigger=PropertyChanged}"
                                  AcceptsReturn="False" TextWrapping="Wrap" MinHeight="64" Margin="0,6,0,0"
-                                 ToolTip="Two to four lines about who you are. Leave empty to skip it."/>
+                                 ToolTip="{views:T 'Two to four lines about who you are. Leave empty to skip it.'}"/>
                     </Expander>
 
                     <ItemsControl ItemsSource="{Binding Sections}" ItemTemplate="{StaticResource SectionTemplate}"/>
 
-                    <Button Content="+ Add Section" HorizontalAlignment="Left" Click="AddSection_Click"/>
+                    <Button Content="{views:T '+ Add Section'}" HorizontalAlignment="Left" Click="AddSection_Click"/>
                 </StackPanel>
             </ScrollViewer>
         </DockPanel>
 
-        <GridSplitter Grid.Column="1" HorizontalAlignment="Stretch" Background="#CCCCCC"/>
+        <GridSplitter Grid.Column="1" HorizontalAlignment="Stretch" Background="{StaticResource LineBrush}"/>
 
         <!-- Right: the live preview. -->
-        <Grid Grid.Column="2" Background="#E9EAEE">
+        <Grid Grid.Column="2" Background="{StaticResource PreviewBackBrush}">
             <wv2:WebView2 x:Name="Preview" SizeChanged="Preview_SizeChanged"/>
             <TextBlock x:Name="PreviewError" Visibility="Collapsed" TextWrapping="Wrap" Margin="24"
-                       HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#B00020"/>
+                       HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{StaticResource ErrorBrush}"/>
         </Grid>
     </Grid>
 </Window>

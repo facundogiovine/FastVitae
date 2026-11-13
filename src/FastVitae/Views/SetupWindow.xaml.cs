@@ -24,10 +24,17 @@ public partial class SetupWindow : Window
         this.info = info;
         DataContext = info;
 
+        // Language only on first run
         if (dataFolder == null)
+        {
             FolderPanel.Visibility = Visibility.Collapsed;
+            LanguageBox.Visibility = Visibility.Collapsed;
+        }
         else
+        {
             FolderBox.Text = dataFolder;
+            LanguageBox.SelectedValue = Text.Language;
+        }
 
         if (reason != "")
         {
@@ -60,8 +67,8 @@ public partial class SetupWindow : Window
     {
         var dialog = new OpenFileDialog
         {
-            Title = "Choose your picture",
-            Filter = "Pictures|*.jpg;*.jpeg;*.png;*.bmp|All files|*.*"
+            Title = Text.Get("Choose your picture"),
+            Filter = Text.Get("Pictures") + "|*.jpg;*.jpeg;*.png;*.bmp|" + Text.Get("All files") + "|*.*"
         };
         if (dialog.ShowDialog(this) != true)
             return;
@@ -74,7 +81,7 @@ public partial class SetupWindow : Window
         }
         catch (Exception ex) when (ex is NotSupportedException or IOException or UnauthorizedAccessException)
         {
-            MessageBox.Show(this, "That file could not be opened as a picture.", "Fast Vitae");
+            MessageBox.Show(this, Text.Get("That file could not be opened as a picture."), "Fast Vitae");
         }
     }
 
@@ -86,9 +93,15 @@ public partial class SetupWindow : Window
         pictureRemoved = true;
     }
 
+    private void Language_Changed(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+    {
+        if (LanguageBox.SelectedValue is string code)
+            Text.SetLanguage(code);
+    }
+
     private void Browse_Click(object sender, RoutedEventArgs e)
     {
-        var dialog = new OpenFolderDialog { Title = "Folder where Fast Vitae keeps your data" };
+        var dialog = new OpenFolderDialog { Title = Text.Get("Folder where Fast Vitae keeps your data") };
         if (dialog.ShowDialog(this) == true)
             FolderBox.Text = dialog.FolderName;
     }
@@ -97,12 +110,12 @@ public partial class SetupWindow : Window
     {
         if (info.FirstName.Trim() == "" || info.LastName.Trim() == "")
         {
-            MessageBox.Show(this, "Please enter your first and last name.", "Fast Vitae");
+            MessageBox.Show(this, Text.Get("Please enter your first and last name."), "Fast Vitae");
             return;
         }
         if (FolderPanel.Visibility == Visibility.Visible && DataFolder == "")
         {
-            MessageBox.Show(this, "Please choose a folder for your data.", "Fast Vitae");
+            MessageBox.Show(this, Text.Get("Please choose a folder for your data."), "Fast Vitae");
             return;
         }
         DialogResult = true;

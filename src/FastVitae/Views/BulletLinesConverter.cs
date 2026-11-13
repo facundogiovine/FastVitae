@@ -11,12 +11,12 @@ public class BulletLinesConverter : IValueConverter
         return string.Join(Environment.NewLine, (List<string>)value);
     }
 
+    // Keep the text as typed
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
     {
         return ((string)value)
             .Split('\n')
-            .Select(line => line.Trim())
-            .Where(line => line != "")
+            .Select(line => line.TrimEnd('\r'))
             .ToList();
     }
 }
