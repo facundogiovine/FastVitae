@@ -303,7 +303,7 @@ public class DocxWriter
         return properties;
     }
 
-    // Field style set by the user
+    // User-set field style
     private static TextStyle? StyleOf(Dictionary<string, TextStyle> styles, string key) =>
         styles.TryGetValue(key, out var style) ? style : null;
 

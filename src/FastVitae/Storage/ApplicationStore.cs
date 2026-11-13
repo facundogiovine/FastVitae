@@ -54,7 +54,7 @@ public class JobApplication
     public string StatusHoverColor => ApplicationStatus.DarkColorOf(Status);
 }
 
-// Applications in one Excel per profile
+// Applications Excel, one per profile
 public class ApplicationStore
 {
     private const int FieldColumn = 1;
@@ -73,7 +73,7 @@ public class ApplicationStore
 
     public string FilePath(string profile) => Path.Combine(store.ProfileFolder(profile), "Applications.xlsx");
 
-    // Old layout: one file per Field
+    // Old per-Field files
     private string OldFolder(string profile) => Path.Combine(store.ProfileFolder(profile), "Applications");
 
     public List<JobApplication> List(string profile)
@@ -147,7 +147,7 @@ public class ApplicationStore
             {
                 string field = Path.GetFileNameWithoutExtension(file);
                 using var oldBook = new XLWorkbook(file);
-                // Old columns: company, role, date, CV, status
+                // Old column order
                 foreach (var old in oldBook.Worksheets.First().RowsUsed().Skip(1))
                 {
                     old.Cell(3).TryGetValue(out DateTime date);

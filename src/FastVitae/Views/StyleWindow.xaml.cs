@@ -4,13 +4,13 @@ using FastVitae.Model;
 
 namespace FastVitae.Views;
 
-// Font, size, colour for one field
+// One field's text format
 public partial class StyleWindow : Window
 {
     private readonly string key;
     private bool filling;
 
-    // Null after Reset: back to default
+    // Null means default style
     public TextStyle? Result { get; private set; }
 
     public StyleWindow(string key, TextStyle start, string sample)
@@ -20,7 +20,7 @@ public partial class StyleWindow : Window
         Sample.Text = sample.Trim() == "" ? "Aa Bb Cc 123" : sample.Trim().Split('\n')[0];
         ShowStyle(start);
 
-        // Same kind of field, whole CV
+        // Apply-to-all button label
         string? label = key switch
         {
             "Dates" => "Apply to all dates",
@@ -36,7 +36,7 @@ public partial class StyleWindow : Window
         }
     }
 
-    // Set when the style goes everywhere
+    // Apply to every field
     public bool ApplyToAll { get; private set; }
 
     private void ApplyAll_Click(object sender, RoutedEventArgs e)

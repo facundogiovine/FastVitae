@@ -83,7 +83,7 @@ public partial class App : Application
         }
     }
 
-    // Pick and save a new picture
+    // Pick and save picture
     public static bool ChoosePicture(Window owner, ProfileStore store, string profile)
     {
         var dialog = new Microsoft.Win32.OpenFileDialog

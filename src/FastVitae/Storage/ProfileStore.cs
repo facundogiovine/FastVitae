@@ -34,7 +34,7 @@ public class ProfileStore
     private string CvPath(string profile, string company, string role) =>
         Path.Combine(CvFolder(profile, company), NameCleaner.Clean(role) + ".json");
 
-    // Set: PDF and Word go here
+    // PDF and Word folder
     public string CvOutputRoot { get; set; } = "";
 
     // Where PDF and Word go
@@ -46,7 +46,7 @@ public class ProfileStore
     public string FolderToShow(string profile, string company) =>
         Directory.Exists(OutputFolder(profile, company)) ? OutputFolder(profile, company) : CvFolder(profile, company);
 
-    // Top folder for the profile's CVs
+    // Profile's top CV folder
     public string OutputRoot(string profile) => CvOutputRoot == ""
         ? Path.Combine(ProfileFolder(profile), "CVs")
         : Path.Combine(CvOutputRoot, NameCleaner.Clean(profile));
@@ -86,7 +86,7 @@ public class ProfileStore
     // Old picture is kept aside
     public void SavePicture(string profile, string sourceFile)
     {
-        // Resize first, so bad files keep the old
+        // Bad file keeps old picture
         string temp = PicturePath(profile) + ".new";
         PictureFile.SaveResized(sourceFile, temp);
         KeepOldPicture(profile);

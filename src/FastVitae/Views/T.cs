@@ -43,7 +43,7 @@ public class LiveText : INotifyPropertyChanged
     }
 }
 
-// Shows a stored English word translated
+// Stored English word, translated
 public class TranslateConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture) =>

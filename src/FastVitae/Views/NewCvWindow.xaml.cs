@@ -44,7 +44,7 @@ public partial class NewCvWindow : Window
     private void ShowPictureNote() =>
         NoPictureNote.Visibility = store.HasPicture(profile) ? Visibility.Collapsed : Visibility.Visible;
 
-    // No picture yet: ask for one
+    // No picture: ask one
     private void PictureOption_Click(object sender, RoutedEventArgs e)
     {
         if (PictureOption.IsChecked == true && !store.HasPicture(profile) && !App.ChoosePicture(this, store, profile))

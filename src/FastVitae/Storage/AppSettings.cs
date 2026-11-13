@@ -10,7 +10,7 @@ public class AppSettings
     public string DataFolder { get; set; } = "";
     public string LastProfile { get; set; } = "";
 
-    // Empty: PDF and Word in data folder
+    // Empty: use data folder
     public string CvOutputFolder { get; set; } = "";
 
     // "es", "pt" or "en"

@@ -6,7 +6,7 @@ namespace FastVitae.Views;
 // Right-click opens text format
 public static class Format
 {
-    // Which CV field the box fills
+    // CV field this box fills
     public static readonly DependencyProperty KeyProperty = DependencyProperty.RegisterAttached(
         "Key", typeof(string), typeof(Format), new PropertyMetadata("", OnKeySet));
 

@@ -66,7 +66,7 @@ public class Role
     // RoleTitle, Dates, Bullets
     public Dictionary<string, TextStyle> Styles { get; set; } = new();
 
-    // Printed text, like "May 2020 - Present"
+    // Text as printed
     [JsonIgnore]
     public string Dates
     {

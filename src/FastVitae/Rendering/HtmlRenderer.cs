@@ -135,7 +135,7 @@ public static class HtmlRenderer
         return items.Count == 0 ? "" : $"<ul>{string.Concat(items)}</ul>";
     }
 
-    // Inline CSS for a set style
+    // Inline CSS for style
     private static string Css(Dictionary<string, TextStyle> styles, string key)
     {
         if (!styles.TryGetValue(key, out var style))

@@ -150,7 +150,7 @@ public partial class EditorWindow : Window
     private void ShowPictureNote() =>
         NoPictureNote.Visibility = store.HasPicture(profile) ? Visibility.Collapsed : Visibility.Visible;
 
-    // No picture yet: ask for one
+    // No picture: ask one
     private void PictureOption_Click(object sender, RoutedEventArgs e)
     {
         if (doc.ShowPicture && !store.HasPicture(profile) && !App.ChoosePicture(this, store, profile))
@@ -289,7 +289,7 @@ public partial class EditorWindow : Window
 
         if (dialog.ShowDialog() != true)
             return;
-        // Every entry or role, or one
+        // One field, or all
         var targets = !dialog.ApplyToAll ? new List<Dictionary<string, TextStyle>> { styles }
             : key is "EntryName" or "Place"
                 ? doc.Sections.SelectMany(s => s.Entries).Select(en => en.Styles).ToList()

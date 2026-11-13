@@ -1,6 +1,6 @@
 namespace FastVitae.Model;
 
-// Font, size and colour of one field
+// One field's text format
 public class TextStyle
 {
     public const string DefaultFont = "STIX Two Text";
