@@ -64,6 +64,7 @@ Fast Vitae\
       CVs\Company\First Last - Role.pdf
       CVs\Company\First Last - Role.docx
       CVs\Company\First Last - Role_Pic.pdf   (CV with picture)
+      CVs\Company\First Last - Role_2.pdf     (created again; never overwritten)
 ```
 
 `settings.json` next to the exe remembers the data folder, the last profile used, the language and, if set, a separate folder for new CVs.

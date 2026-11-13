@@ -362,6 +362,11 @@ public partial class EditorWindow : Window
         string fileName = NameCleaner.Clean($"{doc.BasicInfo.FullName} - {role}");
         if (HtmlRenderer.UsesPicture(doc, store.PicturePath(profile)))
             fileName += "_Pic";
+
+        // Never overwrite: add _2, _3
+        string baseName = fileName;
+        for (int number = 2; File.Exists(Path.Combine(folder, fileName + ".pdf")) || File.Exists(Path.Combine(folder, fileName + ".docx")); number++)
+            fileName = $"{baseName}_{number}";
         DocxWriter.Write(doc, Path.Combine(folder, fileName + ".docx"), store.PicturePath(profile));
 
         if (!previewReady)
