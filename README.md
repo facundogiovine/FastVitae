@@ -15,7 +15,7 @@ The exe is not code-signed yet, so Windows may show "Windows protected your PC" 
 ## Features
 
 - One CV per company and role, saved in a folder named after the company.
-- Start a CV from scratch, from saved content, or from a CV you already made.
+- Start a CV from scratch, from saved content, or from a CV you already made. Companies you already applied to are offered per Field.
 - **Fields** and **Specialties** (for example Programming, then C#) hold reusable content, so a new application starts pre-filled.
 - Sections in two formats: bullet columns (up to four), or name with bullet points. Add, rename, reorder and remove them.
 - Role dates picked from month and year lists, including Present.
