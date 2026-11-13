@@ -16,11 +16,26 @@
             <ComboBox x:Name="SizeBox" DockPanel.Dock="Right" Width="76" MinWidth="0" Margin="8,0,0,0" MaxDropDownHeight="300"
                       ItemsSource="{x:Static model:TextStyle.Sizes}" SelectionChanged="Changed" ToolTip="{views:T 'Size'}"/>
             <ComboBox x:Name="FontBox" MinWidth="0" ItemsSource="{x:Static model:TextStyle.Fonts}" SelectionChanged="Changed" ToolTip="{views:T 'Font'}">
+                <ComboBox.Resources>
+                    <views:FontInstalledConverter x:Key="Installed"/>
+                </ComboBox.Resources>
                 <ComboBox.ItemTemplate>
                     <DataTemplate>
                         <TextBlock Text="{Binding}" FontFamily="{Binding}"/>
                     </DataTemplate>
                 </ComboBox.ItemTemplate>
+                <!-- Missing fonts: gray, not pickable -->
+                <ComboBox.ItemContainerStyle>
+                    <Style TargetType="ComboBoxItem" BasedOn="{StaticResource {x:Type ComboBoxItem}}">
+                        <Setter Property="ToolTipService.ShowOnDisabled" Value="True"/>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding Converter={StaticResource Installed}}" Value="False">
+                                <Setter Property="IsEnabled" Value="False"/>
+                                <Setter Property="ToolTip" Value="{views:T 'You need to install this font.'}"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </ComboBox.ItemContainerStyle>
             </ComboBox>
         </DockPanel>
 

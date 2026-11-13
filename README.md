@@ -19,7 +19,7 @@ The exe is not code-signed yet, so Windows may show "Windows protected your PC" 
 - **Fields** and **Specialties** (for example Programming, then C#) hold reusable content, so a new application starts pre-filled.
 - Sections in two formats: bullet columns (up to four), or name with bullet points. Add, rename, reorder and remove them.
 - Role dates picked from month and year lists, including Present.
-- Right-click any CV field to set its font, size, colour, bold, italic or strikethrough. Apply one format to all dates, titles, companies or locations at once.
+- Right-click any CV field to set its font, size, colour, bold, italic or strikethrough. Apply one format to all dates, titles, companies or locations at once. Fonts missing on the PC are grayed out.
 - English, Spanish and Portuguese, for both the app and the CV's fixed words.
 - **Applications** tab: every CV you create is logged with its Field, company, role and date. Mark each one Applied, In process, Approved or Rejected, filter the list, open the CV you sent or its folder. The list lives in one Excel file per profile, and Excel is not needed to use it.
 - Optional picture header: name and title on the left, picture on the right. Pick which part of the photo to use, with a live preview. Replaced pictures are kept, numbered.
