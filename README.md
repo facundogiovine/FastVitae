@@ -17,9 +17,13 @@ The exe is not code-signed yet, so Windows may show "Windows protected your PC" 
 - One CV per company and role, saved in a folder named after the company.
 - Start a CV from scratch, from saved content, or from a CV you already made.
 - **Fields** and **Specialties** (for example Programming, then C#) hold reusable content, so a new application starts pre-filled.
-- Sections in two formats: bullet columns, or name with bullet points. Add, rename, reorder and remove them.
-- **Applications** tab: every CV you create is logged with its Field, company, role and date. Mark each one Applied, In process, Approved or Rejected, filter the list, and open the CV you sent. The list lives in one Excel file per Field, and Excel is not needed to use it.
-- Optional picture header: name and title on the left, picture on the right.
+- Sections in two formats: bullet columns (up to four), or name with bullet points. Add, rename, reorder and remove them.
+- Role dates picked from month and year lists, including Present.
+- Right-click any CV field to set its font, size, colour, bold, italic or strikethrough. Apply one format to all dates, titles, companies or locations at once.
+- English, Spanish and Portuguese, for both the app and the CV's fixed words.
+- **Applications** tab: every CV you create is logged with its Field, company, role and date. Mark each one Applied, In process, Approved or Rejected, filter the list, open the CV you sent or its folder. The list lives in one Excel file per profile, and Excel is not needed to use it.
+- Optional picture header: name and title on the left, picture on the right. Replaced pictures are kept, numbered.
+- Move the data folder, or send only new CVs to another folder.
 - Several profiles on one install. No accounts, no sign-up.
 - Works fully offline. No database. Your data is plain JSON files in a folder you choose.
 - One exe of about 60 MB. Nothing to install.
@@ -53,14 +57,15 @@ Fast Vitae\
     First Last\
       profile.json
       picture.jpg
-      Applications\Programming.xlsx
+      First_Last_Picture_1.jpg
+      Applications.xlsx
       Fields\Programming\C#.json
       CVs\Company\Role.json
       CVs\Company\First Last - Role.pdf
       CVs\Company\First Last - Role.docx
 ```
 
-`settings.json` next to the exe remembers the data folder and the last profile used.
+`settings.json` next to the exe remembers the data folder, the last profile used, the language and, if set, a separate folder for new CVs.
 
 ## Privacy
 
