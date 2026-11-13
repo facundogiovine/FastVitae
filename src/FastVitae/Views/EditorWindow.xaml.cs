@@ -360,6 +360,8 @@ public partial class EditorWindow : Window
         string folder = store.OutputFolder(profile, company);
         Directory.CreateDirectory(folder);
         string fileName = NameCleaner.Clean($"{doc.BasicInfo.FullName} - {role}");
+        if (HtmlRenderer.UsesPicture(doc, store.PicturePath(profile)))
+            fileName += "_Pic";
         DocxWriter.Write(doc, Path.Combine(folder, fileName + ".docx"), store.PicturePath(profile));
 
         if (!previewReady)
