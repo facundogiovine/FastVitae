@@ -16,6 +16,7 @@ public partial class NewCvWindow : Window
     public string Company => CompanyBox.Text.Trim();
     public string Role => RoleBox.Text.Trim();
     private string Field => FieldCombo.Text.Trim();
+    private string Language => LanguageBox.SelectedValue as string ?? "en";
 
     // Content for the editor
     public CvDocument? Document { get; private set; }
@@ -123,15 +124,17 @@ public partial class NewCvWindow : Window
             // Specialty content, profile contact
             Document = store.LoadSpecialty(profile, Field, specialty);
             Document.BasicInfo = store.LoadProfile(profile);
+            Document.StartAsNewCv(Language);
         }
         else if (ExistingOption.IsChecked == true)
         {
             var source = existingCvs[ExistingCombo.SelectedIndex];
             Document = store.LoadCv(profile, source.Company, source.Role);
+            Document.StartAsNewCv(Language);
         }
         else
         {
-            Document = CvDocument.NewFromScratch(store.LoadProfile(profile), Text.Language);
+            Document = CvDocument.NewFromScratch(store.LoadProfile(profile), Language);
         }
 
         // A typed Field is created

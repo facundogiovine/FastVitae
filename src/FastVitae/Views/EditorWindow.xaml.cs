@@ -68,6 +68,7 @@ public partial class EditorWindow : Window
         this.profile = profile;
         this.doc = doc;
         DataContext = doc;
+        CvLanguageBox.SelectedValue = doc.Language;
         ShowPictureNote();
 
         // Redraw shortly after typing
@@ -82,6 +83,17 @@ public partial class EditorWindow : Window
         FormPanel.AddHandler(TextBoxBase.TextChangedEvent, new RoutedEventHandler((s, e) => ContentChanged()));
         FormPanel.AddHandler(Selector.SelectionChangedEvent, new RoutedEventHandler((s, e) => ContentChanged()));
         Loaded += async (s, e) => await StartPreview();
+    }
+
+    // Switch CV language, redraw form
+    private void CvLanguage_Changed(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+    {
+        if (CvLanguageBox.SelectedValue is not string code || code == doc.Language)
+            return;
+        doc.SetLanguage(code);
+        DataContext = null;
+        DataContext = doc;
+        ContentChanged();
     }
 
     private string CurrentJson() => JsonSerializer.Serialize(doc, CvDocument.JsonOptions);

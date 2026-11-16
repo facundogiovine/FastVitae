@@ -139,6 +139,8 @@
                 <DockPanel>
                     <Button x:Name="CreateButton" Content="{views:T 'Create'}" Style="{StaticResource Primary}" DockPanel.Dock="Right" Margin="0" Click="Create_Click"
                             ToolTip="{views:T 'Write the CV as PDF and Word into the company folder'}"/>
+                    <ComboBox x:Name="CvLanguageBox" Style="{StaticResource LanguageCombo}" DockPanel.Dock="Right" Margin="0,0,8,0"
+                              VerticalAlignment="Center" SelectionChanged="CvLanguage_Changed" ToolTip="{views:T 'CV language'}"/>
                     <Button x:Name="OpenFolderButton" Style="{StaticResource FolderButton}" DockPanel.Dock="Right" Margin="0,0,8,0"
                             Click="OpenFolder_Click" Visibility="Collapsed" ToolTip="{views:T 'Open in folder'}"/>
                     <Button x:Name="SaveToSpecialtyButton" Content="{views:T 'Save to Specialty'}" DockPanel.Dock="Left" Click="SaveToSpecialty_Click"

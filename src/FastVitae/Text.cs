@@ -286,5 +286,10 @@ public static class Text
             ("La vista previa y el PDF necesitan Microsoft Edge WebView2 Runtime, que no se encontró en esta PC.",
              "A pré-visualização e o PDF precisam do Microsoft Edge WebView2 Runtime, que não foi encontrado neste PC."),
         ["The picture could not be saved:"] = ("No se pudo guardar la foto:", "Não foi possível salvar a foto:"),
+        ["CV language"] = ("Idioma del CV", "Idioma do CV"),
+        ["Update"] = ("Actualizar", "Atualizar"),
+        ["There's an Update available"] = ("Hay una actualización disponible", "Há uma atualização disponível"),
+        ["Updating..."] = ("Actualizando...", "Atualizando..."),
+        ["The update could not be installed:"] = ("No se pudo instalar la actualización:", "Não foi possível instalar a atualização:"),
     };
 }

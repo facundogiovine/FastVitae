@@ -70,3 +70,25 @@ public class CvLanguageTests
         Assert.Equal("pt", JsonSerializer.Deserialize<CvDocument>(json, CvDocument.JsonOptions)!.Language);
     }
 }
+
+public class StartAsNewCvTests
+{
+    [Fact]
+    public void StartAsNewCv_OldSource_GetsGrayDatesAndLanguage()
+    {
+        var doc = new CvDocument();
+        doc.Sections.Add(new Section { Title = "EDUCATION" });
+        doc.StartAsNewCv("es");
+        Assert.Equal("EDUCACIÓN", doc.Sections[0].Title);
+        Assert.Equal("#8C8C8C", doc.Styles["Dates"].Color);
+    }
+
+    [Fact]
+    public void StartAsNewCv_KeepsSourceDateStyle()
+    {
+        var doc = new CvDocument();
+        doc.Styles["Dates"] = new TextStyle { Color = "#1F4E79" };
+        doc.StartAsNewCv("en");
+        Assert.Equal("#1F4E79", doc.Styles["Dates"].Color);
+    }
+}

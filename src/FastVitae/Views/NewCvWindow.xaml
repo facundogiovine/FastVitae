@@ -16,6 +16,10 @@
         <ComboBox x:Name="FieldCombo" IsEditable="True" LostFocus="FieldCombo_Changed" SelectionChanged="FieldCombo_Changed"
                   ToolTip="{views:T 'Pick a Field or type a new one, for example: Programming'}"/>
 
+        <TextBlock Text="{views:T 'CV language'}" Style="{StaticResource Label}"/>
+        <ComboBox x:Name="LanguageBox" Style="{StaticResource LanguageCombo}" HorizontalAlignment="Left" SelectedValue="en"
+                  ToolTip="{views:T 'CV language'}"/>
+
         <TextBlock Text="{views:T 'Start from'}" Style="{StaticResource Label}" Margin="0,16,0,4"/>
         <RadioButton x:Name="ScratchOption" Content="{views:T 'Scratch'}" IsChecked="True" Margin="0,2"/>
 

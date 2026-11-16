@@ -215,6 +215,13 @@ public class CvDocument
         }
     }
 
+    // Copied content becomes new CV
+    public void StartAsNewCv(string language)
+    {
+        SetLanguage(language);
+        Styles.TryAdd("Dates", TextStyle.NewCvDates);
+    }
+
     // Language most titles are in
     public static string GuessLanguage(CvDocument doc, string fallback)
     {
