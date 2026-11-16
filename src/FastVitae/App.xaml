@@ -55,7 +55,7 @@
                 </DataTrigger>
             </DataTemplate.Triggers>
         </DataTemplate>
-        <Style x:Key="CountryCombo" TargetType="ComboBox">
+        <Style x:Key="CountryCombo" TargetType="ComboBox" BasedOn="{StaticResource DefaultComboBoxStyle}">
             <Setter Property="views:Search.Kind" Value="Country"/>
             <Setter Property="ItemTemplate" Value="{StaticResource CountryTemplate}"/>
             <Setter Property="MaxDropDownHeight" Value="320"/>
@@ -78,7 +78,7 @@
                 </DataTrigger>
             </DataTemplate.Triggers>
         </DataTemplate>
-        <Style x:Key="CurrencyCombo" TargetType="ComboBox">
+        <Style x:Key="CurrencyCombo" TargetType="ComboBox" BasedOn="{StaticResource DefaultComboBoxStyle}">
             <Setter Property="views:Search.Kind" Value="Currency"/>
             <Setter Property="ItemTemplate" Value="{StaticResource CurrencyTemplate}"/>
             <Setter Property="MaxDropDownHeight" Value="320"/>
