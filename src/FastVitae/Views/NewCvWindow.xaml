@@ -6,15 +6,12 @@
         Title="{views:T 'New CV'}" Width="460" SizeToContent="Height"
         WindowStartupLocation="CenterOwner" ResizeMode="NoResize" ShowInTaskbar="False">
     <StackPanel Margin="20">
-        <TextBlock Text="{views:T 'Company'}" Style="{StaticResource Label}" Margin="0,0,0,2"/>
-        <ComboBox x:Name="CompanyBox" IsEditable="True" MaxDropDownHeight="300" ToolTip="{views:T 'The company you are applying to'}"/>
+        <TextBlock Text="{views:T 'Field'}" Style="{StaticResource Label}" Margin="0,0,0,2"/>
+        <ComboBox x:Name="FieldCombo" IsEditable="True" LostFocus="FieldCombo_Changed" SelectionChanged="FieldCombo_Changed"
+                  ToolTip="{views:T 'Pick a Field or type a new one, for example: Software Development, Hospitality'}"/>
 
         <TextBlock Text="{views:T 'Role'}" Style="{StaticResource Label}"/>
-        <TextBox x:Name="RoleBox" ToolTip="{views:T 'The position you are applying for in that company'}"/>
-
-        <TextBlock Text="{views:T 'Field'}" Style="{StaticResource Label}"/>
-        <ComboBox x:Name="FieldCombo" IsEditable="True" LostFocus="FieldCombo_Changed" SelectionChanged="FieldCombo_Changed"
-                  ToolTip="{views:T 'Pick a Field or type a new one, for example: Programming'}"/>
+        <TextBox x:Name="RoleBox" ToolTip="{views:T 'The kind of job this CV is for, for example: C# Developer'}"/>
 
         <TextBlock Text="{views:T 'CV language'}" Style="{StaticResource Label}"/>
         <ComboBox x:Name="LanguageBox" Style="{StaticResource LanguageCombo}" HorizontalAlignment="Left" SelectedValue="en"

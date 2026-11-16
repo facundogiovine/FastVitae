@@ -8,7 +8,7 @@ using FastVitae.Storage;
 
 namespace FastVitae.Views;
 
-// CV list grouped by company
+// CV list grouped by Field
 public partial class HomeWindow : Window
 {
     private readonly ProfileStore store;
@@ -175,12 +175,31 @@ public partial class HomeWindow : Window
     private void Refresh()
     {
         Title = "Fast Vitae - " + profile;
+        MoveOldData();
         var items = store.ListCvs(profile);
         var view = new ListCollectionView(items);
-        view.GroupDescriptions.Add(new PropertyGroupDescription(nameof(CvListItem.Company)));
+        view.GroupDescriptions.Add(new PropertyGroupDescription(nameof(CvListItem.Field)));
         CvList.ItemsSource = view;
         EmptyText.Visibility = items.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
         RefreshApplications();
+    }
+
+    // Once per profile per run
+    private static readonly HashSet<string> movedProfiles = new();
+
+    private void MoveOldData()
+    {
+        if (!movedProfiles.Add(store.ProfileFolder(profile)))
+            return;
+        try
+        {
+            store.Migrate(profile);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            movedProfiles.Remove(store.ProfileFolder(profile));
+            MessageBox.Show(this, Text.Get("Some old files could not be moved. If a CV or the Excel file is open, close it and reopen Fast Vitae.") + "\n\n" + ex.Message, "Fast Vitae");
+        }
     }
 
     // ---- Applications tab ----
@@ -295,7 +314,7 @@ public partial class HomeWindow : Window
         if (dialog.ShowDialog() != true)
             return;
 
-        var editor = EditorWindow.ForCv(store, profile, dialog.Document!, dialog.Company, dialog.Role, dialog.AlreadyExists);
+        var editor = EditorWindow.ForCv(store, profile, dialog.Document!, dialog.Field, dialog.Role, dialog.AlreadyExists);
         editor.Owner = this;
         editor.ShowDialog();
         Refresh();
@@ -322,8 +341,8 @@ public partial class HomeWindow : Window
             return;
         }
 
-        var doc = store.LoadCv(profile, item.Company, item.Role);
-        var editor = EditorWindow.ForCv(store, profile, doc, item.Company, item.Role, alreadyCreated: true);
+        var doc = store.LoadCv(profile, item.Field, item.Role);
+        var editor = EditorWindow.ForCv(store, profile, doc, item.Field, item.Role, alreadyCreated: true);
         editor.Owner = this;
         editor.ShowDialog();
         Refresh();
@@ -333,7 +352,7 @@ public partial class HomeWindow : Window
     private void OpenFolder_Click(object sender, RoutedEventArgs e)
     {
         if (((FrameworkElement)sender).DataContext is CvListItem item)
-            App.OpenFolder(store.FolderToShow(profile, item.Company));
+            App.OpenFolder(store.FolderToShow(profile, item.Field));
     }
 
     private void OpenCvsFolder_Click(object sender, RoutedEventArgs e) => App.OpenFolder(store.OutputRoot(profile));

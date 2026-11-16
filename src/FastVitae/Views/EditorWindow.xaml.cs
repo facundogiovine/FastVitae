@@ -19,7 +19,7 @@ public partial class EditorWindow : Window
     private readonly CvDocument doc;
 
     // Set when editing a CV.
-    private string company = "";
+    private string cvField = "";
     private string role = "";
 
     // Set when editing a Specialty.
@@ -34,10 +34,10 @@ public partial class EditorWindow : Window
     private readonly DispatcherTimer previewTimer;
     private bool previewReady;
 
-    public static EditorWindow ForCv(ProfileStore store, string profile, CvDocument doc, string company, string role, bool alreadyCreated)
+    public static EditorWindow ForCv(ProfileStore store, string profile, CvDocument doc, string field, string role, bool alreadyCreated)
     {
-        var window = new EditorWindow(store, profile, doc) { company = company, role = role };
-        window.Title = $"Fast Vitae - {company} - {role}";
+        var window = new EditorWindow(store, profile, doc) { cvField = field, role = role };
+        window.Title = $"Fast Vitae - {field} - {role}";
         if (alreadyCreated)
         {
             window.savedJson = window.CurrentJson();
@@ -269,7 +269,7 @@ public partial class EditorWindow : Window
         ContentChanged();
     }
 
-    private void OpenFolder_Click(object sender, RoutedEventArgs e) => App.OpenFolder(store.FolderToShow(profile, company));
+    private void OpenFolder_Click(object sender, RoutedEventArgs e) => App.OpenFolder(store.FolderToShow(profile, cvField));
 
     // Format window for one field
     public void EditStyle(System.Windows.Controls.Control box, string key)
@@ -336,10 +336,9 @@ public partial class EditorWindow : Window
             }
             else
             {
-                string pdfPath = await CreateCvFiles();
-                StatusText.Text = Text.Get("Created in") + " " + store.OutputFolder(profile, company);
+                await CreateCvFiles();
+                StatusText.Text = Text.Get("Created in") + " " + store.OutputFolder(profile, cvField);
                 OpenFolderButton.Visibility = Visibility.Visible;
-                RecordApplication(pdfPath);
             }
             savedJson = CurrentJson();
         }
@@ -351,29 +350,12 @@ public partial class EditorWindow : Window
         }
     }
 
-    // Add to the applications Excel
-    private void RecordApplication(string pdfPath)
-    {
-        try
-        {
-            string field = doc.Field == "" ? "General" : doc.Field;
-            string cvPath = Path.GetRelativePath(store.ProfileFolder(profile), pdfPath);
-            new ApplicationStore(store).Record(profile, field, NameCleaner.Clean(company), NameCleaner.Clean(role), cvPath);
-        }
-        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
-        {
-            MessageBox.Show(this,
-                Text.Get("The CV was created, but the applications list could not be updated. If its Excel file is open, close it and click Create again.") + "\n\n" + ex.Message,
-                "Fast Vitae", MessageBoxButton.OK, MessageBoxImage.Warning);
-        }
-    }
-
     // Write data, Word and PDF
     private async Task<string> CreateCvFiles()
     {
-        store.SaveCv(profile, company, role, doc);
+        store.SaveCv(profile, cvField, role, doc);
 
-        string folder = store.OutputFolder(profile, company);
+        string folder = store.OutputFolder(profile, cvField);
         Directory.CreateDirectory(folder);
         string fileName = NameCleaner.Clean($"{doc.BasicInfo.FullName} - {role}");
         if (HtmlRenderer.UsesPicture(doc, store.PicturePath(profile)))

@@ -1,21 +1,19 @@
-using System.IO;
 using System.Windows;
-using System.Windows.Controls;
 using FastVitae.Model;
 using FastVitae.Storage;
 
 namespace FastVitae.Views;
 
-// Company, role and starting point
+// Field, role and starting point
 public partial class NewCvWindow : Window
 {
     private readonly ProfileStore store;
     private readonly string profile;
     private readonly List<CvListItem> existingCvs;
 
-    public string Company => CompanyBox.Text.Trim();
+    public string Field => NameCleaner.Clean(FieldCombo.Text.Trim());
     public string Role => RoleBox.Text.Trim();
-    private string Field => FieldCombo.Text.Trim();
+    private string TypedField => FieldCombo.Text.Trim();
     private string CvLanguage => LanguageBox.SelectedValue as string ?? "en";
 
     // Content for the editor
@@ -35,29 +33,12 @@ public partial class NewCvWindow : Window
         ShowSpecialties();
 
         existingCvs = store.ListCvs(profile).Where(cv => !cv.Unreadable).ToList();
-        ExistingCombo.ItemsSource = existingCvs.Select(cv => $"{cv.Company} - {cv.Role}").ToList();
+        ExistingCombo.ItemsSource = existingCvs.Select(cv => $"{cv.Field} - {cv.Role}").ToList();
         ExistingCombo.SelectedIndex = 0;
         ExistingOption.IsEnabled = existingCvs.Count > 0;
 
-        foreach (var cv in existingCvs)
-        {
-            string field;
-            try
-            {
-                field = store.LoadCv(profile, cv.Company, cv.Role).Field;
-            }
-            catch (Exception ex) when (ex is IOException or System.Text.Json.JsonException)
-            {
-                continue;
-            }
-            if (!companiesByField.TryGetValue(field, out var companies))
-                companiesByField[field] = companies = new SortedSet<string>(StringComparer.OrdinalIgnoreCase);
-            companies.Add(cv.Company);
-        }
-        ShowCompanies();
-
         ShowPictureNote();
-        Loaded += (s, e) => CompanyBox.Focus();
+        Loaded += (s, e) => FieldCombo.Focus();
     }
 
     private void ShowPictureNote() =>
@@ -71,27 +52,12 @@ public partial class NewCvWindow : Window
         ShowPictureNote();
     }
 
-    // Companies with CVs, by Field
-    private readonly Dictionary<string, SortedSet<string>> companiesByField = new(StringComparer.OrdinalIgnoreCase);
-
-    private void FieldCombo_Changed(object sender, RoutedEventArgs e)
-    {
-        ShowSpecialties();
-        ShowCompanies();
-    }
-
-    // Keep typed text, swap list
-    private void ShowCompanies()
-    {
-        string typed = CompanyBox.Text;
-        CompanyBox.ItemsSource = companiesByField.TryGetValue(Field, out var companies) ? companies.ToList() : new List<string>();
-        CompanyBox.Text = typed;
-    }
+    private void FieldCombo_Changed(object sender, RoutedEventArgs e) => ShowSpecialties();
 
     // List the Field's Specialties
     private void ShowSpecialties()
     {
-        var specialties = Field == "" ? new List<string>() : store.ListSpecialties(profile, Field);
+        var specialties = TypedField == "" ? new List<string>() : store.ListSpecialties(profile, TypedField);
         SpecialtyCombo.ItemsSource = specialties;
         SpecialtyCombo.SelectedIndex = 0;
 
@@ -103,16 +69,16 @@ public partial class NewCvWindow : Window
 
     private void Start_Click(object sender, RoutedEventArgs e)
     {
-        if (Company == "" || Role == "" || Field == "")
+        if (Role == "" || TypedField == "")
         {
-            MessageBox.Show(this, Text.Get("Please enter the company, the role and the Field."), "Fast Vitae");
+            MessageBox.Show(this, Text.Get("Please enter the Field and the role."), "Fast Vitae");
             return;
         }
 
-        if (store.CvExists(profile, Company, Role))
+        if (store.CvExists(profile, Field, Role))
         {
-            MessageBox.Show(this, Text.Get("You already have a CV for this company and role. It will be opened."), "Fast Vitae");
-            Document = store.LoadCv(profile, Company, Role);
+            MessageBox.Show(this, Text.Get("You already have a CV for this Field and role. It will be opened."), "Fast Vitae");
+            Document = store.LoadCv(profile, Field, Role);
             AlreadyExists = true;
             DialogResult = true;
             return;
@@ -122,14 +88,14 @@ public partial class NewCvWindow : Window
         if (SpecialtyOption.IsChecked == true && SpecialtyCombo.SelectedItem is string specialty)
         {
             // Specialty content, profile contact
-            Document = store.LoadSpecialty(profile, Field, specialty);
+            Document = store.LoadSpecialty(profile, TypedField, specialty);
             Document.BasicInfo = store.LoadProfile(profile);
             Document.StartAsNewCv(CvLanguage);
         }
         else if (ExistingOption.IsChecked == true)
         {
             var source = existingCvs[ExistingCombo.SelectedIndex];
-            Document = store.LoadCv(profile, source.Company, source.Role);
+            Document = store.LoadCv(profile, source.Field, source.Role);
             Document.StartAsNewCv(CvLanguage);
         }
         else
@@ -138,8 +104,8 @@ public partial class NewCvWindow : Window
         }
 
         // A typed Field is created
-        store.CreateField(profile, Field);
-        Document.Field = NameCleaner.Clean(Field);
+        store.CreateField(profile, TypedField);
+        Document.Field = Field;
         Document.ShowPicture = PictureOption.IsChecked == true;
         DialogResult = true;
     }

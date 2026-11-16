@@ -49,6 +49,19 @@ public class JobApplication
     public DateTime DateApplied { get; set; }
     public string CvPath { get; set; } = "";
     public string Status { get; set; } = ApplicationStatus.Applied;
+    public decimal? SalaryMin { get; set; }
+    public decimal? SalaryMax { get; set; }
+    public string Currency { get; set; } = "";
+    public string Link { get; set; } = "";
+
+    // "2,000 - 2,500 USD"
+    public string SalaryTextIn(IFormatProvider culture)
+    {
+        var amounts = new[] { SalaryMin, SalaryMax }.Where(a => a != null).Select(a => a!.Value.ToString("#,0.##", culture)).ToList();
+        return amounts.Count == 0 ? "" : $"{string.Join(" - ", amounts)} {Currency}".Trim();
+    }
+
+    public string SalaryText => SalaryTextIn(System.Globalization.CultureInfo.CurrentCulture);
 
     public string StatusColor => ApplicationStatus.RowColorOf(Status);
     public string StatusHoverColor => ApplicationStatus.DarkColorOf(Status);
@@ -63,6 +76,10 @@ public class ApplicationStore
     private const int DateColumn = 4;
     private const int CvColumn = 5;
     private const int StatusColumn = 6;
+    private const int SalaryMinColumn = 7;
+    private const int SalaryMaxColumn = 8;
+    private const int CurrencyColumn = 9;
+    private const int LinkColumn = 10;
 
     private readonly ProfileStore store;
 
@@ -98,21 +115,77 @@ public class ApplicationStore
                 Role = row.Cell(RoleColumn).GetString(),
                 DateApplied = date,
                 CvPath = row.Cell(CvColumn).GetString(),
-                Status = ApplicationStatus.All.Contains(status) ? status : ApplicationStatus.Applied
+                Status = ApplicationStatus.All.Contains(status) ? status : ApplicationStatus.Applied,
+                SalaryMin = row.Cell(SalaryMinColumn).TryGetValue(out decimal min) && !row.Cell(SalaryMinColumn).IsEmpty() ? min : null,
+                SalaryMax = row.Cell(SalaryMaxColumn).TryGetValue(out decimal max) && !row.Cell(SalaryMaxColumn).IsEmpty() ? max : null,
+                Currency = row.Cell(CurrencyColumn).GetString(),
+                Link = row.Cell(LinkColumn).GetString()
             });
         }
         return applications.OrderByDescending(a => a.DateApplied).ToList();
     }
 
-    // Add or update on Create
-    public void Record(string profile, string field, string company, string role, string cvPath)
+    // New row with frozen CV copy
+    public void Add(string profile, JobApplication application, string? sourcePdf)
+    {
+        MergeOldFiles(profile);
+        if (sourcePdf != null)
+            application.CvPath = FreezeCopy(profile, application, sourcePdf);
+
+        string path = FilePath(profile);
+        using var book = OpenOrCreate(path);
+        var sheet = book.Worksheets.First();
+        AddHeaders(sheet);
+        var row = AddRow(sheet, application.Field, application.Company, application.Role, application.DateApplied, application.Status);
+        row.Cell(CvColumn).Value = application.CvPath;
+        if (application.SalaryMin != null)
+            row.Cell(SalaryMinColumn).Value = application.SalaryMin.Value;
+        if (application.SalaryMax != null)
+            row.Cell(SalaryMaxColumn).Value = application.SalaryMax.Value;
+        row.Cell(CurrencyColumn).Value = application.Currency;
+        row.Cell(LinkColumn).Value = application.Link;
+        book.SaveAs(path);
+    }
+
+    // Copy sent PDF, return relative path
+    private string FreezeCopy(string profile, JobApplication application, string sourcePdf)
+    {
+        string folder = store.ApplicationsFolder(profile);
+        Directory.CreateDirectory(folder);
+        string name = NameCleaner.Clean($"{application.Company} - {application.Role} - {application.DateApplied:yyyy-MM-dd}");
+        string target = ProfileStore.FreeName(Path.Combine(folder, name + ".pdf"));
+        File.Copy(sourcePdf, target);
+        return Path.GetRelativePath(store.ProfileFolder(profile), target);
+    }
+
+    // Old rows get frozen copies
+    public void FreezeOldRows(string profile)
     {
         MergeOldFiles(profile);
         string path = FilePath(profile);
-        using var book = OpenOrCreate(path);
-        var row = FindRow(book.Worksheets.First(), field, company, role) ?? AddRow(book.Worksheets.First(), field, company, role, DateTime.Today, ApplicationStatus.Applied);
-        row.Cell(CvColumn).Value = cvPath;
-        book.SaveAs(path);
+        if (!File.Exists(path))
+            return;
+
+        using var book = new XLWorkbook(path);
+        bool changed = false;
+        string profileFolder = store.ProfileFolder(profile);
+        foreach (var row in book.Worksheets.First().RowsUsed().Skip(1))
+        {
+            string cvPath = row.Cell(CvColumn).GetString();
+            if (cvPath == "")
+                continue;
+            string full = Path.GetFullPath(cvPath, profileFolder);
+            bool alreadyFrozen = full.StartsWith(store.ApplicationsFolder(profile) + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase);
+            if (alreadyFrozen || !File.Exists(full))
+                continue;
+
+            row.Cell(DateColumn).TryGetValue(out DateTime date);
+            var application = new JobApplication { Company = row.Cell(CompanyColumn).GetString(), Role = row.Cell(RoleColumn).GetString(), DateApplied = date };
+            row.Cell(CvColumn).Value = FreezeCopy(profile, application, full);
+            changed = true;
+        }
+        if (changed)
+            book.Save();
     }
 
     // Change status and row colour
@@ -120,7 +193,7 @@ public class ApplicationStore
     {
         string path = FilePath(profile);
         using var book = new XLWorkbook(path);
-        var row = FindRow(book.Worksheets.First(), application.Field, application.Company, application.Role);
+        var row = FindRow(book.Worksheets.First(), application);
         if (row == null)
             throw new IOException("That application is no longer in the Excel file.");
 
@@ -158,9 +231,11 @@ public class ApplicationStore
             book.SaveAs(path);
         }
 
-        // Keep the old files aside
+        // Old Excel files aside only
         string aside = oldFolder + " (old)";
-        Directory.Move(oldFolder, Directory.Exists(aside) ? aside + " " + DateTime.Now.ToString("yyyyMMddHHmmss") : aside);
+        Directory.CreateDirectory(aside);
+        foreach (string file in oldFiles)
+            File.Move(file, ProfileStore.FreeName(Path.Combine(aside, Path.GetFileName(file))));
     }
 
     private static IXLRow AddRow(IXLWorksheet sheet, string field, string company, string role, DateTime date, string status)
@@ -177,11 +252,29 @@ public class ApplicationStore
         return row;
     }
 
-    private static IXLRow? FindRow(IXLWorksheet sheet, string field, string company, string role) =>
+    // Frozen copy is unique
+    private static IXLRow? FindRow(IXLWorksheet sheet, JobApplication application) =>
         sheet.RowsUsed().Skip(1).FirstOrDefault(row =>
-            row.Cell(FieldColumn).GetString() == field &&
-            row.Cell(CompanyColumn).GetString() == company &&
-            row.Cell(RoleColumn).GetString() == role);
+            row.Cell(CvColumn).GetString() == application.CvPath &&
+            row.Cell(FieldColumn).GetString() == application.Field &&
+            row.Cell(CompanyColumn).GetString() == application.Company &&
+            row.Cell(RoleColumn).GetString() == application.Role);
+
+    // Old files lack new columns
+    private static void AddHeaders(IXLWorksheet sheet)
+    {
+        if (!sheet.Cell(1, SalaryMinColumn).IsEmpty())
+            return;
+        sheet.Cell(1, SalaryMinColumn).Value = Text.Get("Salary from");
+        sheet.Cell(1, SalaryMaxColumn).Value = Text.Get("Salary to");
+        sheet.Cell(1, CurrencyColumn).Value = Text.Get("Currency");
+        sheet.Cell(1, LinkColumn).Value = Text.Get("Link");
+        sheet.Row(1).Style.Font.Bold = true;
+        sheet.Column(SalaryMinColumn).Width = 12;
+        sheet.Column(SalaryMaxColumn).Width = 12;
+        sheet.Column(CurrencyColumn).Width = 10;
+        sheet.Column(LinkColumn).Width = 50;
+    }
 
     private static void Paint(IXLRow row, string status) =>
         row.Cells(FieldColumn, StatusColumn).Style.Fill.BackgroundColor = XLColor.FromHtml(ApplicationStatus.ColorOf(status));

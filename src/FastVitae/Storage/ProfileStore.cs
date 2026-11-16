@@ -7,7 +7,7 @@ namespace FastVitae.Storage;
 // One CV list row
 public class CvListItem
 {
-    public string Company { get; set; } = "";
+    public string Field { get; set; } = "";
     public string Role { get; set; } = "";
     public DateTime LastEdit { get; set; }
     public string Path { get; set; } = "";
@@ -29,30 +29,34 @@ public class ProfileStore
     public string ProfileFolder(string profile) => Path.Combine(ProfilesFolder, NameCleaner.Clean(profile));
     private string FieldsFolder(string profile) => Path.Combine(ProfileFolder(profile), "Fields");
     private string FieldFolder(string profile, string field) => Path.Combine(FieldsFolder(profile), NameCleaner.Clean(field));
+    private string SpecialtiesFolder(string profile, string field) => Path.Combine(FieldFolder(profile, field), "Specialties");
     private string SpecialtyPath(string profile, string field, string specialty) =>
-        Path.Combine(FieldFolder(profile, field), NameCleaner.Clean(specialty) + ".json");
-    private string CvPath(string profile, string company, string role) =>
-        Path.Combine(CvFolder(profile, company), NameCleaner.Clean(role) + ".json");
+        Path.Combine(SpecialtiesFolder(profile, field), NameCleaner.Clean(specialty) + ".json");
+    public string CvFolder(string profile, string field) => Path.Combine(FieldFolder(profile, field), "CVs");
+    private string CvPath(string profile, string field, string role) =>
+        Path.Combine(CvFolder(profile, field), NameCleaner.Clean(role) + ".json");
 
     // PDF and Word folder
     public string CvOutputRoot { get; set; } = "";
 
     // Where PDF and Word go
-    public string OutputFolder(string profile, string company) => CvOutputRoot == ""
-        ? CvFolder(profile, company)
-        : Path.Combine(CvOutputRoot, NameCleaner.Clean(profile), NameCleaner.Clean(company));
+    public string OutputFolder(string profile, string field) => CvOutputRoot == ""
+        ? CvFolder(profile, field)
+        : Path.Combine(CvOutputRoot, NameCleaner.Clean(profile), NameCleaner.Clean(field));
 
-    // Output folder, else old place
-    public string FolderToShow(string profile, string company) =>
-        Directory.Exists(OutputFolder(profile, company)) ? OutputFolder(profile, company) : CvFolder(profile, company);
+    // Output folder, else data folder
+    public string FolderToShow(string profile, string field) =>
+        Directory.Exists(OutputFolder(profile, field)) ? OutputFolder(profile, field) : CvFolder(profile, field);
 
     // Profile's top CV folder
     public string OutputRoot(string profile) => CvOutputRoot == ""
-        ? Path.Combine(ProfileFolder(profile), "CVs")
+        ? FieldsFolder(profile)
         : Path.Combine(CvOutputRoot, NameCleaner.Clean(profile));
 
-    public string CvFolder(string profile, string company) =>
-        Path.Combine(ProfileFolder(profile), "CVs", NameCleaner.Clean(company));
+    // Sent CV copies
+    public string ApplicationsFolder(string profile) => CvOutputRoot == ""
+        ? Path.Combine(ProfileFolder(profile), "Applications")
+        : Path.Combine(CvOutputRoot, NameCleaner.Clean(profile), "Applications");
 
     // ---- Profiles ----
 
@@ -127,14 +131,23 @@ public class ProfileStore
 
     public List<string> ListFields(string profile) => ListFolderNames(FieldsFolder(profile));
 
-    public List<string> ListSpecialties(string profile, string field) => ListJsonNames(FieldFolder(profile, field));
+    public List<string> ListSpecialties(string profile, string field) => ListJsonNames(SpecialtiesFolder(profile, field));
 
     public void CreateField(string profile, string field) => Directory.CreateDirectory(FieldFolder(profile, field));
 
     public void RenameField(string profile, string field, string newName) =>
         Directory.Move(FieldFolder(profile, field), FieldFolder(profile, newName));
 
-    public void DeleteField(string profile, string field) => Directory.Delete(FieldFolder(profile, field), recursive: true);
+    // Specialties only; CVs stay
+    public void DeleteField(string profile, string field)
+    {
+        string specialties = SpecialtiesFolder(profile, field);
+        if (Directory.Exists(specialties))
+            Directory.Delete(specialties, recursive: true);
+        string folder = FieldFolder(profile, field);
+        if (Directory.Exists(folder) && !Directory.EnumerateFileSystemEntries(folder).Any())
+            Directory.Delete(folder);
+    }
 
     public bool SpecialtyExists(string profile, string field, string specialty) =>
         File.Exists(SpecialtyPath(profile, field, specialty));
@@ -156,14 +169,16 @@ public class ProfileStore
     public List<CvListItem> ListCvs(string profile)
     {
         var items = new List<CvListItem>();
-        string cvsFolder = Path.Combine(ProfileFolder(profile), "CVs");
-        foreach (string company in ListFolderNames(cvsFolder))
+        foreach (string field in ListFields(profile))
         {
-            foreach (string file in Directory.GetFiles(Path.Combine(cvsFolder, company), "*.json"))
+            string folder = CvFolder(profile, field);
+            if (!Directory.Exists(folder))
+                continue;
+            foreach (string file in Directory.GetFiles(folder, "*.json"))
             {
                 var item = new CvListItem
                 {
-                    Company = company,
+                    Field = field,
                     Role = Path.GetFileNameWithoutExtension(file),
                     LastEdit = File.GetLastWriteTime(file),
                     Path = file
@@ -182,9 +197,9 @@ public class ProfileStore
         return items;
     }
 
-    public bool CvExists(string profile, string company, string role) => File.Exists(CvPath(profile, company, role));
+    public bool CvExists(string profile, string field, string role) => File.Exists(CvPath(profile, field, role));
 
-    public CvDocument LoadCv(string profile, string company, string role) => WithLanguage(Read<CvDocument>(CvPath(profile, company, role)));
+    public CvDocument LoadCv(string profile, string field, string role) => WithLanguage(Read<CvDocument>(CvPath(profile, field, role)));
 
     // Old files: guess the language
     private static CvDocument WithLanguage(CvDocument doc)
@@ -194,7 +209,92 @@ public class ProfileStore
         return doc;
     }
 
-    public void SaveCv(string profile, string company, string role, CvDocument doc) => Write(CvPath(profile, company, role), doc);
+    public void SaveCv(string profile, string field, string role, CvDocument doc) => Write(CvPath(profile, field, role), doc);
+
+    // Newest PDF made for a CV
+    public string? LatestPdf(string profile, string field, string role, string fullName)
+    {
+        string folder = OutputFolder(profile, field);
+        if (!Directory.Exists(folder))
+            return null;
+        var pattern = new System.Text.RegularExpressions.Regex(
+            "^" + System.Text.RegularExpressions.Regex.Escape(NameCleaner.Clean($"{fullName} - {role}")) + @"(_Pic)?(_\d+)?\.pdf$",
+            System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+        return Directory.GetFiles(folder, "*.pdf")
+            .Where(file => pattern.IsMatch(Path.GetFileName(file)))
+            .OrderByDescending(File.GetLastWriteTime)
+            .FirstOrDefault();
+    }
+
+    // ---- Old layout ----
+
+    // Old folders to new layout
+    public void Migrate(string profile)
+    {
+        // Freeze sent PDFs first
+        new ApplicationStore(this).FreezeOldRows(profile);
+
+        // Specialties into their subfolder
+        foreach (string field in ListFields(profile))
+        {
+            foreach (string file in Directory.GetFiles(FieldFolder(profile, field), "*.json"))
+            {
+                Directory.CreateDirectory(SpecialtiesFolder(profile, field));
+                File.Move(file, FreeName(Path.Combine(SpecialtiesFolder(profile, field), Path.GetFileName(file))));
+            }
+        }
+
+        // Company CVs into their Field
+        string oldCvs = Path.Combine(ProfileFolder(profile), "CVs");
+        foreach (string company in ListFolderNames(oldCvs))
+        {
+            string companyFolder = Path.Combine(oldCvs, company);
+            var movedTo = new List<(string Role, string Folder)>();
+            foreach (string file in Directory.GetFiles(companyFolder, "*.json"))
+            {
+                string field = "General";
+                try
+                {
+                    string saved = Read<CvDocument>(file).Field;
+                    if (saved != "")
+                        field = saved;
+                }
+                catch (Exception ex) when (ex is JsonException or InvalidDataException)
+                {
+                }
+                string target = CvFolder(profile, field);
+                Directory.CreateDirectory(target);
+                File.Move(file, FreeName(Path.Combine(target, Path.GetFileName(file))));
+                movedTo.Add((Path.GetFileNameWithoutExtension(file), target));
+            }
+
+            // PDF and Word follow role
+            foreach (string output in Directory.GetFiles(companyFolder))
+            {
+                if (movedTo.Count == 0)
+                    break;
+                string name = Path.GetFileNameWithoutExtension(output);
+                var owner = movedTo.FirstOrDefault(m => name.Contains(" - " + m.Role, StringComparison.OrdinalIgnoreCase));
+                string folder = owner.Folder ?? movedTo[0].Folder;
+                File.Move(output, FreeName(Path.Combine(folder, Path.GetFileName(output))));
+            }
+            if (!Directory.EnumerateFileSystemEntries(companyFolder).Any())
+                Directory.Delete(companyFolder);
+        }
+        if (Directory.Exists(oldCvs) && !Directory.EnumerateFileSystemEntries(oldCvs).Any())
+            Directory.Delete(oldCvs);
+    }
+
+    // Taken name gets _2, _3
+    public static string FreeName(string path)
+    {
+        string folder = Path.GetDirectoryName(path)!;
+        string name = Path.GetFileNameWithoutExtension(path);
+        string extension = Path.GetExtension(path);
+        for (int number = 2; File.Exists(path); number++)
+            path = Path.Combine(folder, $"{name}_{number}{extension}");
+        return path;
+    }
 
     // ---- Helpers ----
 
