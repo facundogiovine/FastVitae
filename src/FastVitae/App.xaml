@@ -45,22 +45,15 @@
         <DataTemplate x:Key="CountryTemplate">
             <StackPanel Orientation="Horizontal">
                 <Image Source="{Binding Flag}" Width="16" Height="11" Margin="0,0,6,0" VerticalAlignment="Center"/>
-                <TextBlock x:Name="NameText" Text="{Binding Name}" Margin="0,0,8,0"/>
                 <TextBlock Text="{Binding DialCode}"/>
             </StackPanel>
-            <DataTemplate.Triggers>
-                <!-- Closed box hides the name -->
-                <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=ComboBoxItem}}" Value="{x:Null}">
-                    <Setter TargetName="NameText" Property="Visibility" Value="Collapsed"/>
-                </DataTrigger>
-            </DataTemplate.Triggers>
         </DataTemplate>
         <Style x:Key="CountryCombo" TargetType="ComboBox" BasedOn="{StaticResource DefaultComboBoxStyle}">
             <Setter Property="views:Search.Kind" Value="Country"/>
             <Setter Property="ItemTemplate" Value="{StaticResource CountryTemplate}"/>
             <Setter Property="MaxDropDownHeight" Value="320"/>
             <!-- Fits the longest code -->
-            <Setter Property="Width" Value="96"/>
+            <Setter Property="Width" Value="120"/>
         </Style>
         <!-- Currency dropdown -->
         <DataTemplate x:Key="CurrencyTemplate">
