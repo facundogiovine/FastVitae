@@ -221,8 +221,8 @@ public class DocxWriter
 
             foreach (var role in entry.Roles)
             {
-                if (HasText(role.Title) || HasText(role.Dates))
-                    entryParagraphs.Add(LeftRightLine(role.Title, role.Dates, StyleOf(role.Styles, "RoleTitle"), doc.DateStyle(role)));
+                if (HasText(role.Title) || HasText(role.DatesIn(doc.Language)))
+                    entryParagraphs.Add(LeftRightLine(role.Title, role.DatesIn(doc.Language), StyleOf(role.Styles, "RoleTitle"), doc.DateStyle(role)));
                 entryParagraphs.AddRange(role.Bullets.Where(HasText).Select(text => Bullet(text, StyleOf(role.Styles, "Bullets"))));
             }
 

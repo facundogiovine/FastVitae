@@ -131,7 +131,7 @@ public partial class NewCvWindow : Window
         }
         else
         {
-            Document = CvDocument.NewFromScratch(store.LoadProfile(profile));
+            Document = CvDocument.NewFromScratch(store.LoadProfile(profile), Text.Language);
         }
 
         // A typed Field is created

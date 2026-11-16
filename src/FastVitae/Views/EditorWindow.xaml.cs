@@ -278,7 +278,7 @@ public partial class EditorWindow : Window
         string sample = box switch
         {
             System.Windows.Controls.TextBox textBox => textBox.Text,
-            System.Windows.Controls.ComboBox => ((Role)box.DataContext).Dates,
+            System.Windows.Controls.ComboBox => ((Role)box.DataContext).DatesIn(doc.Language),
             _ => ""
         };
 

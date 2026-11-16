@@ -66,16 +66,12 @@ public class Role
     // RoleTitle, Dates, Bullets
     public Dictionary<string, TextStyle> Styles { get; set; } = new();
 
-    // Text as printed
-    [JsonIgnore]
-    public string Dates
+    // Dates as printed
+    public string DatesIn(string language)
     {
-        get
-        {
-            string start = $"{Text.Get(StartMonth)} {StartYear}".Trim();
-            string end = EndYear == Present ? Text.Get(Present) : $"{Text.Get(EndMonth)} {EndYear}".Trim();
-            return start != "" && end != "" ? $"{start} - {end}" : start + end;
-        }
+        string start = $"{Text.Get(StartMonth, language)} {StartYear}".Trim();
+        string end = EndYear == Present ? Text.Get(Present, language) : $"{Text.Get(EndMonth, language)} {EndYear}".Trim();
+        return start != "" && end != "" ? $"{start} - {end}" : start + end;
     }
 
     // Old files: free text dates
@@ -173,6 +169,9 @@ public class CvDocument
     // Show the profile picture
     public bool ShowPicture { get; set; }
 
+    // "es", "pt" or "en"
+    public string Language { get; set; } = "";
+
     public string Summary { get; set; } = "";
 
     // Name, Title, Contact, Summary
@@ -186,18 +185,45 @@ public class CvDocument
         Converters = { new JsonStringEnumConverter() }
     };
 
+    // Standard section titles, English
+    public static readonly string[] DefaultTitles =
+        { "AREAS OF EXPERTISE", "PROFESSIONAL EXPERIENCE", "EDUCATION", "ADDITIONAL SKILLS" };
+
     // Empty CV, standard sections
-    public static CvDocument NewFromScratch(BasicInfo info)
+    public static CvDocument NewFromScratch(BasicInfo info, string language)
     {
-        var doc = new CvDocument { BasicInfo = info };
+        var doc = new CvDocument { BasicInfo = info, Language = language };
         doc.Styles["Dates"] = TextStyle.NewCvDates;
-        var expertise = new Section { Title = Text.Get("AREAS OF EXPERTISE"), Layout = SectionLayout.BulletColumns };
+        var expertise = new Section { Title = Text.Get(DefaultTitles[0], language), Layout = SectionLayout.BulletColumns };
         expertise.Columns.Add(new BulletColumn());
         doc.Sections.Add(expertise);
-        doc.Sections.Add(new Section { Title = Text.Get("PROFESSIONAL EXPERIENCE"), Layout = SectionLayout.Entries });
-        doc.Sections.Add(new Section { Title = Text.Get("EDUCATION"), Layout = SectionLayout.Entries });
-        doc.Sections.Add(new Section { Title = Text.Get("ADDITIONAL SKILLS"), Layout = SectionLayout.Entries });
+        foreach (string title in DefaultTitles.Skip(1))
+            doc.Sections.Add(new Section { Title = Text.Get(title, language), Layout = SectionLayout.Entries });
         return doc;
+    }
+
+    // Switch language, rename default titles
+    public void SetLanguage(string code)
+    {
+        Language = code;
+        foreach (var section in Sections)
+        {
+            string? english = DefaultTitles.FirstOrDefault(title =>
+                Text.Languages.Any(l => Text.Get(title, l.Code) == section.Title));
+            if (english != null)
+                section.Title = Text.Get(english, code);
+        }
+    }
+
+    // Language most titles are in
+    public static string GuessLanguage(CvDocument doc, string fallback)
+    {
+        var counts = Text.Languages
+            .Select(l => (l.Code, Count: doc.Sections.Count(s => DefaultTitles.Any(t => Text.Get(t, l.Code) == s.Title))))
+            .OrderByDescending(c => c.Count)
+            .ToList();
+        bool clearWinner = counts[0].Count > 0 && counts[0].Count > counts[1].Count;
+        return clearWinner ? counts[0].Code : fallback;
     }
 
     // Role style, else CV default

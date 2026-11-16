@@ -89,7 +89,7 @@ public partial class FieldsWindow : Window
         }
 
         // Create empty, then open
-        Try(() => store.SaveSpecialty(profile, SelectedField, name, CvDocument.NewFromScratch(new BasicInfo())));
+        Try(() => store.SaveSpecialty(profile, SelectedField, name, CvDocument.NewFromScratch(new BasicInfo(), Text.Language)));
         ShowSpecialties(NameCleaner.Clean(name));
         EditSpecialty_Click(sender, e);
     }

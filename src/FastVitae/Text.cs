@@ -36,11 +36,14 @@ public static class Text
     }
 
     // English in, current language out
-    public static string Get(string english)
+    public static string Get(string english) => Get(english, Language);
+
+    // English in, given language out
+    public static string Get(string english, string language)
     {
-        if (Language == "en" || !Table.TryGetValue(english, out var words))
+        if (language == "en" || !Table.TryGetValue(english, out var words))
             return english;
-        return Language == "es" ? words.Es : words.Pt;
+        return language == "es" ? words.Es : words.Pt;
     }
 
     // Translated text with values

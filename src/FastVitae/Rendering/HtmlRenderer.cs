@@ -111,8 +111,8 @@ public static class HtmlRenderer
 
         foreach (var role in entry.Roles)
         {
-            if (HasText(role.Title) || HasText(role.Dates))
-                html.Append(Line("role-title", role.Title, role.Dates, Css(role.Styles, "RoleTitle"), Css(doc.DateStyle(role))));
+            if (HasText(role.Title) || HasText(role.DatesIn(doc.Language)))
+                html.Append(Line("role-title", role.Title, role.DatesIn(doc.Language), Css(role.Styles, "RoleTitle"), Css(doc.DateStyle(role))));
             html.Append(BulletList(role.Bullets, Css(role.Styles, "Bullets")));
         }
         return html.Length == 0 ? "" : $"<div class=\"entry\">{html}</div>";

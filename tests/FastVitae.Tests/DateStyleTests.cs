@@ -8,7 +8,7 @@ public class DateStyleTests
 {
     private static CvDocument ScratchWithRole(out Role role)
     {
-        var doc = CvDocument.NewFromScratch(new BasicInfo { FirstName = "Ana" });
+        var doc = CvDocument.NewFromScratch(new BasicInfo { FirstName = "Ana" }, "en");
         role = new Role { Title = "Dev", StartMonth = "May", StartYear = "2020", EndYear = Role.Present };
         var entry = new Entry { Name = "Acme" };
         entry.Roles.Add(role);
@@ -19,7 +19,7 @@ public class DateStyleTests
     [Fact]
     public void NewFromScratch_SetsGrayItalicDates()
     {
-        var doc = CvDocument.NewFromScratch(new BasicInfo());
+        var doc = CvDocument.NewFromScratch(new BasicInfo(), "en");
         Assert.True(doc.Styles["Dates"].Italic);
         Assert.Equal("#8C8C8C", doc.Styles["Dates"].Color);
     }

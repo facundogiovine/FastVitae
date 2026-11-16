@@ -140,7 +140,7 @@ public class ProfileStore
         File.Exists(SpecialtyPath(profile, field, specialty));
 
     public CvDocument LoadSpecialty(string profile, string field, string specialty) =>
-        Read<CvDocument>(SpecialtyPath(profile, field, specialty));
+        WithLanguage(Read<CvDocument>(SpecialtyPath(profile, field, specialty)));
 
     public void SaveSpecialty(string profile, string field, string specialty, CvDocument doc) =>
         Write(SpecialtyPath(profile, field, specialty), doc);
@@ -184,7 +184,15 @@ public class ProfileStore
 
     public bool CvExists(string profile, string company, string role) => File.Exists(CvPath(profile, company, role));
 
-    public CvDocument LoadCv(string profile, string company, string role) => Read<CvDocument>(CvPath(profile, company, role));
+    public CvDocument LoadCv(string profile, string company, string role) => WithLanguage(Read<CvDocument>(CvPath(profile, company, role)));
+
+    // Old files: guess the language
+    private static CvDocument WithLanguage(CvDocument doc)
+    {
+        if (doc.Language == "")
+            doc.Language = CvDocument.GuessLanguage(doc, Text.Language);
+        return doc;
+    }
 
     public void SaveCv(string profile, string company, string role, CvDocument doc) => Write(CvPath(profile, company, role), doc);
 
