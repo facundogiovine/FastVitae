@@ -21,7 +21,96 @@ public partial class HomeWindow : Window
         this.profile = profile;
         LanguageBox.SelectedValue = Text.Language;
         Refresh();
+
+        // Update button and bubble
+        Loaded += (s, e) => ShowUpdate();
+        App.UpdateFound += ShowUpdate;
+        Closed += (s, e) => App.UpdateFound -= ShowUpdate;
+        LocationChanged += (s, e) => UpdateBubble.IsOpen = false;
+        Deactivated += (s, e) => UpdateBubble.IsOpen = false;
     }
+
+    // ---- Update ----
+
+    private void ShowUpdate()
+    {
+        if (App.AvailableUpdate == null || !IsLoaded)
+            return;
+        UpdateButton.Visibility = Visibility.Visible;
+        if (App.BubbleShown)
+            return;
+        App.BubbleShown = true;
+        UpdateBubble.IsOpen = true;
+        var timer = new System.Windows.Threading.DispatcherTimer { Interval = TimeSpan.FromSeconds(8) };
+        timer.Tick += (s, e) =>
+        {
+            timer.Stop();
+            UpdateBubble.IsOpen = false;
+        };
+        timer.Start();
+    }
+
+    // Download, swap, restart
+    private async void Update_Click(object sender, RoutedEventArgs e)
+    {
+        var release = App.AvailableUpdate;
+        if (release == null)
+            return;
+        UpdateBubble.IsOpen = false;
+        UpdateButton.IsEnabled = false;
+        UpdateButton.Content = Text.Get("Updating...");
+        string exePath = Environment.ProcessPath!;
+        string newPath = exePath + ".new";
+        try
+        {
+            await Updater.DownloadAsync(release, newPath);
+
+            // Other windows may ask first
+            foreach (var window in Application.Current.Windows.OfType<Window>().Where(w => w != this).ToList())
+                window.Close();
+            if (Application.Current.Windows.OfType<Window>().Any(w => w != this && w.IsLoaded))
+            {
+                TryDelete(newPath);
+                RestoreUpdateButton();
+                return;
+            }
+
+            Updater.Swap(exePath, newPath);
+            Process.Start(exePath);
+            Application.Current.Shutdown();
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            // Folder not writable: browser
+            TryDelete(newPath);
+            Process.Start(new ProcessStartInfo(release.PageUrl) { UseShellExecute = true });
+            RestoreUpdateButton();
+        }
+        catch (Exception ex) when (ex is System.Net.Http.HttpRequestException or TaskCanceledException)
+        {
+            MessageBox.Show(this, Text.Get("The update could not be installed:") + " " + ex.Message, "Fast Vitae");
+            RestoreUpdateButton();
+        }
+    }
+
+    private void RestoreUpdateButton()
+    {
+        UpdateButton.IsEnabled = true;
+        UpdateButton.Content = Text.Get("Update");
+    }
+
+    private static void TryDelete(string path)
+    {
+        try
+        {
+            File.Delete(path);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+        }
+    }
+
+    private void UpdateBubble_Click(object sender, System.Windows.Input.MouseButtonEventArgs e) => UpdateBubble.IsOpen = false;
 
     private void Refresh()
     {

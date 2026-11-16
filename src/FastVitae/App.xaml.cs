@@ -10,9 +10,17 @@ public partial class App : Application
 {
     public static AppSettings Settings { get; private set; } = new();
 
+    // Found once, at app open
+    public static Release? AvailableUpdate { get; private set; }
+    public static bool BubbleShown { get; set; }
+    public static event Action? UpdateFound;
+
     protected override void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
+        // Old exe may still be closing
+        Updater.CleanOld(Environment.ProcessPath!);
+        _ = Task.Delay(5000).ContinueWith(_ => Updater.CleanOld(Environment.ProcessPath!));
 
         // Stay alive between windows
         ShutdownMode = ShutdownMode.OnExplicitShutdown;
@@ -54,6 +62,18 @@ public partial class App : Application
         string profile = profiles.Contains(Settings.LastProfile) ? Settings.LastProfile : profiles[0];
         ShowHome(profile);
         ShutdownMode = ShutdownMode.OnMainWindowClose;
+        if (Settings.CheckForUpdates)
+            _ = LookForUpdate();
+    }
+
+    // One check, then tell Home
+    private static async Task LookForUpdate()
+    {
+        var release = await Updater.CheckAsync();
+        if (release == null)
+            return;
+        AvailableUpdate = release;
+        UpdateFound?.Invoke();
     }
 
     // Open Home with current settings

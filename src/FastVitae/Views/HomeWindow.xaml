@@ -9,6 +9,19 @@
     <DockPanel Margin="16">
         <DockPanel DockPanel.Dock="Top" Margin="0,0,0,12">
             <StackPanel Orientation="Horizontal" DockPanel.Dock="Right">
+                <Button x:Name="UpdateButton" Content="{views:T 'Update'}" Style="{StaticResource UpdateButton}" Margin="0,0,12,0"
+                        Visibility="Collapsed" Click="Update_Click"/>
+                <!-- Bubble under Update button -->
+                <Popup x:Name="UpdateBubble" PlacementTarget="{Binding ElementName=UpdateButton}" Placement="Bottom"
+                       AllowsTransparency="True" StaysOpen="True" PopupAnimation="Fade">
+                    <StackPanel Margin="0,4,0,0" MouseLeftButtonDown="UpdateBubble_Click" Cursor="Hand">
+                        <Path Data="M0,8 L8,0 L16,8 Z" Fill="{StaticResource CardBrush}" Stroke="#2E7D32" StrokeThickness="1"
+                              HorizontalAlignment="Left" Margin="14,0,0,-1"/>
+                        <Border Background="{StaticResource CardBrush}" BorderBrush="#2E7D32" BorderThickness="1" CornerRadius="6" Padding="12,8">
+                            <TextBlock Text="{views:T 'There\'s an Update available'}" Foreground="White"/>
+                        </Border>
+                    </StackPanel>
+                </Popup>
                 <ComboBox x:Name="LanguageBox" Style="{StaticResource LanguageCombo}" Margin="0,0,12,0" VerticalAlignment="Center"
                           SelectionChanged="Language_Changed" ToolTip="{views:T 'Language'}"/>
                 <Button Content="{views:T 'Fields'}" Click="Fields_Click" ToolTip="{views:T 'Saved content per kind of job, to start new CVs from'}"/>
