@@ -65,6 +65,32 @@ public class SearchPickerTests
         Assert.Equal("PLN", Search.GetValue(combo));
     });
 
+    // Focus must stay in the box
+    [Theory]
+    [InlineData("pola")]
+    [InlineData("zzz")]
+    public void Filtering_KeepsKeyboardFocus(string typed) => OnSta(() =>
+    {
+        var combo = Picker("Country", "PY");
+        var window = new System.Windows.Window { Content = combo, Left = -3000, Width = 300, Height = 400 };
+        window.Show();
+        window.Activate();
+        combo.IsDropDownOpen = true;
+        Idle(combo);
+        var selected = (System.Windows.UIElement)combo.ItemContainerGenerator.ContainerFromItem(combo.SelectedItem);
+        System.Windows.Input.Keyboard.Focus(selected);
+        Assert.True(combo.IsKeyboardFocusWithin);
+
+        Search.Filter(combo, typed);
+        Idle(combo);
+
+        Assert.True(combo.IsKeyboardFocusWithin);
+        window.Close();
+    });
+
+    private static void Idle(ComboBox combo) =>
+        combo.Dispatcher.Invoke(() => { }, System.Windows.Threading.DispatcherPriority.ApplicationIdle);
+
     [Fact]
     public void Currency_EmptyValue_IsDollar() => OnSta(() =>
         Assert.Equal("USD", ((Currency)Picker("Currency", "").SelectedItem).Code));

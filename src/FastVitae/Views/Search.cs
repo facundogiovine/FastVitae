@@ -92,6 +92,19 @@ public static class Search
         if (typed == "")
             SelectValue(combo);
         ShowTyped(combo, typed);
+
+        // Keep keys in the list
+        combo.Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Loaded, () => FocusFirst(combo));
+    }
+
+    private static void FocusFirst(ComboBox combo)
+    {
+        if (!combo.IsDropDownOpen)
+            return;
+        if (combo.ItemContainerGenerator.ContainerFromIndex(0) is ComboBoxItem first)
+            first.Focus();
+        else
+            combo.Focus();
     }
 
     // Select the saved value
@@ -116,7 +129,7 @@ public static class Search
         }
     }
 
-    // Small label above the box
+    // Typed text over the box
     private static void ShowTyped(ComboBox combo, string typed)
     {
         if (combo.GetValue(TypedPopupProperty) is not Popup popup)
@@ -126,21 +139,25 @@ public static class Search
             popup = new Popup
             {
                 PlacementTarget = combo,
-                Placement = PlacementMode.Top,
+                Placement = PlacementMode.Relative,
                 AllowsTransparency = true,
                 IsHitTestVisible = false,
                 Child = new Border
                 {
-                    Background = (System.Windows.Media.Brush)combo.TryFindResource("CardBrush") ?? System.Windows.Media.Brushes.DimGray,
+                    Background = (System.Windows.Media.Brush)combo.TryFindResource("InsetBrush") ?? System.Windows.Media.Brushes.DimGray,
+                    BorderBrush = (System.Windows.Media.Brush)combo.TryFindResource("LineBrush") ?? System.Windows.Media.Brushes.Gray,
+                    BorderThickness = new Thickness(1),
                     CornerRadius = new CornerRadius(4),
-                    Padding = new Thickness(8, 3, 8, 3),
-                    Margin = new Thickness(0, 0, 0, 2),
-                    Child = new TextBlock { Foreground = System.Windows.Media.Brushes.White }
+                    Padding = new Thickness(10, 0, 10, 0),
+                    Child = new TextBlock { Foreground = System.Windows.Media.Brushes.White, VerticalAlignment = VerticalAlignment.Center, TextTrimming = TextTrimming.CharacterEllipsis }
                 }
             };
             combo.SetValue(TypedPopupProperty, popup);
         }
-        ((TextBlock)((Border)popup.Child).Child).Text = typed;
+        var border = (Border)popup.Child;
+        border.Width = combo.ActualWidth;
+        border.Height = combo.ActualHeight;
+        ((TextBlock)border.Child).Text = typed;
         popup.IsOpen = typed != "";
     }
 }
