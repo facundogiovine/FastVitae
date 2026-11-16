@@ -21,6 +21,20 @@ public class Country
 
     public static Country? Find(string iso) => All.FirstOrDefault(country => country.Iso == iso);
 
+    // Pinned first, then alphabetical
+    private static readonly string[] PinnedIsos = { "US", "GB", "CA", "AU" };
+    public static List<Country> Ordered => PinnedIsos.Select(iso => Find(iso)!)
+        .Concat(All.Where(country => !PinnedIsos.Contains(country.Iso))).ToList();
+
+    // Name or dial code
+    public static bool Matches(Country country, string text)
+    {
+        text = text.Trim();
+        return text == ""
+            || country.Name.Contains(text, StringComparison.OrdinalIgnoreCase)
+            || country.DialCode.Replace(" ", "").Contains(text.Replace(" ", ""), StringComparison.OrdinalIgnoreCase);
+    }
+
     // Alphabetical, as shown
     public static readonly List<Country> All = new()
     {
