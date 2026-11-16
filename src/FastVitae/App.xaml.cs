@@ -13,6 +13,7 @@ public partial class App : Application
     // Found once, at app open
     public static Release? AvailableUpdate { get; private set; }
     public static bool BubbleShown { get; set; }
+    public static bool Updating { get; set; }
     public static event Action? UpdateFound;
 
     protected override void OnStartup(StartupEventArgs e)

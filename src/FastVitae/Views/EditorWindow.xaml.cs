@@ -282,7 +282,7 @@ public partial class EditorWindow : Window
             ColumnEntry bullet => bullet.Styles,
             _ => doc.Styles
         };
-        // Dates fall back to CV default
+        // Dates use CV default
         var fallback = key == "Dates" && doc.Styles.TryGetValue("Dates", out var shared) && styles != doc.Styles
             ? shared.Copy()
             : TextStyle.DefaultFor(key);

@@ -37,6 +37,11 @@ public partial class HomeWindow : Window
         if (App.AvailableUpdate == null || !IsLoaded)
             return;
         UpdateButton.Visibility = Visibility.Visible;
+        if (App.Updating)
+        {
+            UpdateButton.IsEnabled = false;
+            UpdateButton.Content = Text.Get("Updating...");
+        }
         if (App.BubbleShown)
             return;
         App.BubbleShown = true;
@@ -54,8 +59,9 @@ public partial class HomeWindow : Window
     private async void Update_Click(object sender, RoutedEventArgs e)
     {
         var release = App.AvailableUpdate;
-        if (release == null)
+        if (release == null || App.Updating)
             return;
+        App.Updating = true;
         UpdateBubble.IsOpen = false;
         UpdateButton.IsEnabled = false;
         UpdateButton.Content = Text.Get("Updating...");
@@ -66,9 +72,7 @@ public partial class HomeWindow : Window
             await Updater.DownloadAsync(release, newPath);
 
             // Other windows may ask first
-            foreach (var window in Application.Current.Windows.OfType<Window>().Where(w => w != this).ToList())
-                window.Close();
-            if (Application.Current.Windows.OfType<Window>().Any(w => w != this && w.IsLoaded))
+            if (!CloseOthers(this, Application.Current.Windows.OfType<Window>()))
             {
                 TryDelete(newPath);
                 RestoreUpdateButton();
@@ -76,25 +80,81 @@ public partial class HomeWindow : Window
             }
 
             Updater.Swap(exePath, newPath);
-            Process.Start(exePath);
-            Application.Current.Shutdown();
+        }
+        catch (Exception ex) when (Updater.IsNetworkError(ex))
+        {
+            TryDelete(newPath);
+            ShowUpdateError(ex);
+            return;
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
             // Folder not writable: browser
             TryDelete(newPath);
-            Process.Start(new ProcessStartInfo(release.PageUrl) { UseShellExecute = true });
             RestoreUpdateButton();
+            OpenInBrowser(release.PageUrl);
+            return;
         }
-        catch (Exception ex) when (ex is System.Net.Http.HttpRequestException or TaskCanceledException)
+
+        try
         {
-            MessageBox.Show(this, Text.Get("The update could not be installed:") + " " + ex.Message, "Fast Vitae");
-            RestoreUpdateButton();
+            Process.Start(exePath);
+            Application.Current.Shutdown();
         }
+        catch (Exception ex)
+        {
+            // New exe blocked: restore old
+            try
+            {
+                Updater.Undo(exePath);
+            }
+            catch (Exception ex2) when (ex2 is IOException or UnauthorizedAccessException)
+            {
+            }
+            ShowUpdateError(ex);
+        }
+    }
+
+    private void ShowUpdateError(Exception ex)
+    {
+        MessageBox.Show(this, Text.Get("The update could not be installed:") + " " + ex.Message, "Fast Vitae");
+        RestoreUpdateButton();
+    }
+
+    private static void OpenInBrowser(string url)
+    {
+        try
+        {
+            Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
+        }
+        catch (System.ComponentModel.Win32Exception)
+        {
+        }
+    }
+
+    // Close others; false if refused
+    public static bool CloseOthers(Window keep, IEnumerable<Window> windows)
+    {
+        var others = windows.Where(w => w != keep).Reverse().ToList();
+        var closed = new HashSet<Window>();
+        foreach (var window in others)
+            window.Closed += (s, e) => closed.Add(window);
+
+        // Newest first, stop on refusal
+        foreach (var window in others)
+        {
+            if (closed.Contains(window))
+                continue;
+            window.Close();
+            if (!closed.Contains(window))
+                return false;
+        }
+        return true;
     }
 
     private void RestoreUpdateButton()
     {
+        App.Updating = false;
         UpdateButton.IsEnabled = true;
         UpdateButton.Content = Text.Get("Update");
     }

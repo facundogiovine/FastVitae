@@ -95,6 +95,17 @@ public static class Updater
         }
     }
 
+    // New exe failed: restore old
+    public static void Undo(string exePath)
+    {
+        File.Delete(exePath);
+        File.Move(exePath + ".old", exePath);
+    }
+
+    // Network, not disk, failed
+    public static bool IsNetworkError(Exception ex) =>
+        ex is HttpRequestException or HttpIOException or TaskCanceledException;
+
     // Remove last version's file
     public static void CleanOld(string exePath)
     {

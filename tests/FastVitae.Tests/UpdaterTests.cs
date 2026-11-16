@@ -80,4 +80,34 @@ public class UpdaterTests : IDisposable
         Updater.CleanOld(exe);
         Assert.False(File.Exists(exe + ".old"));
     }
+
+    [Fact]
+    public void Undo_PutsOldExeBack()
+    {
+        string exe = Path.Combine(folder, "FastVitae.exe"), next = exe + ".new";
+        File.WriteAllText(exe, "old");
+        File.WriteAllText(next, "new");
+        Updater.Swap(exe, next);
+        Updater.Undo(exe);
+        Assert.Equal("old", File.ReadAllText(exe));
+        Assert.False(File.Exists(exe + ".old"));
+    }
+
+    [Fact]
+    public void IsNetworkError_DroppedDownload() =>
+        Assert.True(Updater.IsNetworkError(new System.Net.Http.HttpIOException(System.Net.Http.HttpRequestError.ResponseEnded)));
+
+    [Fact]
+    public void IsNetworkError_RequestAndTimeout()
+    {
+        Assert.True(Updater.IsNetworkError(new System.Net.Http.HttpRequestException()));
+        Assert.True(Updater.IsNetworkError(new TaskCanceledException()));
+    }
+
+    [Fact]
+    public void IsNetworkError_DiskErrors_False()
+    {
+        Assert.False(Updater.IsNetworkError(new IOException()));
+        Assert.False(Updater.IsNetworkError(new UnauthorizedAccessException()));
+    }
 }

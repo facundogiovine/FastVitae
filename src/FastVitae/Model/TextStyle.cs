@@ -34,5 +34,5 @@ public class TextStyle
     // Dates on new CVs
     public static TextStyle NewCvDates => new() { Italic = true, Color = "#8C8C8C" };
 
-    public TextStyle Copy()=> (TextStyle)MemberwiseClone();
+    public TextStyle Copy() => (TextStyle)MemberwiseClone();
 }
