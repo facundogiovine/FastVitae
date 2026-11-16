@@ -270,7 +270,11 @@ public partial class EditorWindow : Window
             ColumnEntry bullet => bullet.Styles,
             _ => doc.Styles
         };
-        var start = styles.TryGetValue(key, out var saved) ? saved.Copy() : TextStyle.DefaultFor(key);
+        // Dates fall back to CV default
+        var fallback = key == "Dates" && doc.Styles.TryGetValue("Dates", out var shared) && styles != doc.Styles
+            ? shared.Copy()
+            : TextStyle.DefaultFor(key);
+        var start = styles.TryGetValue(key, out var saved) ? saved.Copy() : fallback;
         string sample = box switch
         {
             System.Windows.Controls.TextBox textBox => textBox.Text,
@@ -279,7 +283,7 @@ public partial class EditorWindow : Window
         };
 
         // Open just below the box
-        var dialog = new StyleWindow(key, start, sample) { Owner = this };
+        var dialog = new StyleWindow(key, start, fallback, sample) { Owner = this };
         var corner = box.PointToScreen(new Point(0, box.ActualHeight + 4));
         var source = PresentationSource.FromVisual(box);
         if (source?.CompositionTarget != null)

@@ -190,6 +190,7 @@ public class CvDocument
     public static CvDocument NewFromScratch(BasicInfo info)
     {
         var doc = new CvDocument { BasicInfo = info };
+        doc.Styles["Dates"] = TextStyle.NewCvDates;
         var expertise = new Section { Title = Text.Get("AREAS OF EXPERTISE"), Layout = SectionLayout.BulletColumns };
         expertise.Columns.Add(new BulletColumn());
         doc.Sections.Add(expertise);
@@ -198,6 +199,12 @@ public class CvDocument
         doc.Sections.Add(new Section { Title = Text.Get("ADDITIONAL SKILLS"), Layout = SectionLayout.Entries });
         return doc;
     }
+
+    // Role style, else CV default
+    public TextStyle? DateStyle(Role role) =>
+        role.Styles.TryGetValue("Dates", out var own) ? own
+        : Styles.TryGetValue("Dates", out var shared) ? shared
+        : null;
 
     // Independent full copy
     public CvDocument Copy()

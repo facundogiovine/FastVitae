@@ -53,7 +53,7 @@ public class DocxWriter
             if (section.Layout == SectionLayout.BulletColumns)
                 AddBulletColumns(section);
             else
-                AddEntries(section);
+                AddEntries(doc, section);
         }
 
         body.Append(new SectionProperties(
@@ -210,7 +210,7 @@ public class DocxWriter
         body.Append(table);
     }
 
-    private void AddEntries(Section section)
+    private void AddEntries(CvDocument doc, Section section)
     {
         var paragraphs = new List<Paragraph>();
         foreach (var entry in section.Entries)
@@ -222,7 +222,7 @@ public class DocxWriter
             foreach (var role in entry.Roles)
             {
                 if (HasText(role.Title) || HasText(role.Dates))
-                    entryParagraphs.Add(LeftRightLine(role.Title, role.Dates, StyleOf(role.Styles, "RoleTitle"), StyleOf(role.Styles, "Dates")));
+                    entryParagraphs.Add(LeftRightLine(role.Title, role.Dates, StyleOf(role.Styles, "RoleTitle"), doc.DateStyle(role)));
                 entryParagraphs.AddRange(role.Bullets.Where(HasText).Select(text => Bullet(text, StyleOf(role.Styles, "Bullets"))));
             }
 

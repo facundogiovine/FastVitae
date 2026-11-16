@@ -57,7 +57,7 @@ public static class HtmlRenderer
         {
             string content = section.Layout == SectionLayout.BulletColumns
                 ? ColumnsHtml(section)
-                : string.Concat(section.Entries.Select(EntryHtml));
+                : string.Concat(section.Entries.Select(entry => EntryHtml(doc, entry)));
 
             // Skip empty sections
             if (content == "")
@@ -103,7 +103,7 @@ public static class HtmlRenderer
         return lists.Count == 0 ? "" : $"<div class=\"columns\">{string.Concat(lists.Select(list => $"<div>{list}</div>"))}</div>";
     }
 
-    private static string EntryHtml(Entry entry)
+    private static string EntryHtml(CvDocument doc, Entry entry)
     {
         var html = new StringBuilder();
         if (HasText(entry.Name) || HasText(entry.Place))
@@ -112,7 +112,7 @@ public static class HtmlRenderer
         foreach (var role in entry.Roles)
         {
             if (HasText(role.Title) || HasText(role.Dates))
-                html.Append(Line("role-title", role.Title, role.Dates, Css(role.Styles, "RoleTitle"), Css(role.Styles, "Dates")));
+                html.Append(Line("role-title", role.Title, role.Dates, Css(role.Styles, "RoleTitle"), Css(doc.DateStyle(role))));
             html.Append(BulletList(role.Bullets, Css(role.Styles, "Bullets")));
         }
         return html.Length == 0 ? "" : $"<div class=\"entry\">{html}</div>";
@@ -136,9 +136,12 @@ public static class HtmlRenderer
     }
 
     // Inline CSS for style
-    private static string Css(Dictionary<string, TextStyle> styles, string key)
+    private static string Css(Dictionary<string, TextStyle> styles, string key) =>
+        Css(styles.TryGetValue(key, out var style) ? style : null);
+
+    private static string Css(TextStyle? style)
     {
-        if (!styles.TryGetValue(key, out var style))
+        if (style == null)
             return "";
         return $" style=\"font-family: '{style.Font}', 'STIX Two Text', serif; font-size: {style.Size}pt; color: {style.Color}; " +
             $"font-weight: {(style.Bold ? "bold" : "normal")}; font-style: {(style.Italic ? "italic" : "normal")}; " +

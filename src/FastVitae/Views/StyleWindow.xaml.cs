@@ -7,16 +7,16 @@ namespace FastVitae.Views;
 // One field's text format
 public partial class StyleWindow : Window
 {
-    private readonly string key;
+    private readonly TextStyle defaultStyle;
     private bool filling;
 
     // Null means default style
     public TextStyle? Result { get; private set; }
 
-    public StyleWindow(string key, TextStyle start, string sample)
+    public StyleWindow(string key, TextStyle start, TextStyle defaultStyle, string sample)
     {
         InitializeComponent();
-        this.key = key;
+        this.defaultStyle = defaultStyle;
         Sample.Text = sample.Trim() == "" ? "Aa Bb Cc 123" : sample.Trim().Split('\n')[0];
         ShowStyle(start);
 
@@ -85,12 +85,12 @@ public partial class StyleWindow : Window
         Sample.TextDecorations = style.Strike ? TextDecorations.Strikethrough : null;
     }
 
-    private void Reset_Click(object sender, RoutedEventArgs e) => ShowStyle(TextStyle.DefaultFor(key));
+    private void Reset_Click(object sender, RoutedEventArgs e) => ShowStyle(defaultStyle);
 
     private void Ok_Click(object sender, RoutedEventArgs e)
     {
         var picked = Picked();
-        bool isDefault = System.Text.Json.JsonSerializer.Serialize(picked) == System.Text.Json.JsonSerializer.Serialize(TextStyle.DefaultFor(key));
+        bool isDefault = System.Text.Json.JsonSerializer.Serialize(picked) == System.Text.Json.JsonSerializer.Serialize(defaultStyle);
         Result = isDefault ? null : picked;
         DialogResult = true;
     }
