@@ -65,6 +65,20 @@ public class SearchPickerTests
         Assert.Equal("PLN", Search.GetValue(combo));
     });
 
+    // XAML load must not pick
+    [Fact]
+    public void LoadingFromXaml_DoesNotPickFirstCountry() => OnSta(() =>
+    {
+        var combo = new ComboBox();
+        int changes = 0;
+        combo.SelectionChanged += (s, e) => changes++;
+        combo.BeginInit();
+        Search.SetKind(combo, "Country");
+        combo.EndInit();
+        Assert.Equal("", Search.GetValue(combo));
+        Assert.Equal(0, changes);
+    });
+
     // Focus must stay in the box
     [Theory]
     [InlineData("pola")]

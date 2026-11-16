@@ -178,7 +178,12 @@ public partial class EditorWindow : Window
         ShowPictureNote();
     }
 
-    private void Country_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e) => ContentChanged();
+    private void Country_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+    {
+        // Fires while the window loads
+        if (IsLoaded)
+            ContentChanged();
+    }
 
     private void AddSection_Click(object sender, RoutedEventArgs e)
     {

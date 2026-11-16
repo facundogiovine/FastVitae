@@ -44,6 +44,8 @@ public static class Search
         System.Collections.IList items = countries ? Country.Ordered : Currency.All.ToList();
         combo.SelectedValuePath = countries ? nameof(Country.Iso) : nameof(Currency.Code);
         combo.IsTextSearchEnabled = false;
+        // Else loading picks the first
+        combo.IsSynchronizedWithCurrentItem = false;
         Quietly(combo, () => combo.ItemsSource = new ListCollectionView(items));
         SelectValue(combo);
 
@@ -101,9 +103,9 @@ public static class Search
     {
         if (!combo.IsDropDownOpen)
             return;
-        if (combo.ItemContainerGenerator.ContainerFromIndex(0) is ComboBoxItem first)
-            first.Focus();
-        else
+        combo.UpdateLayout();
+        bool focused = combo.ItemContainerGenerator.ContainerFromIndex(0) is ComboBoxItem first && first.Focus();
+        if (!focused)
             combo.Focus();
     }
 
