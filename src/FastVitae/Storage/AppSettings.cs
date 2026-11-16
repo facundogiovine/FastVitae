@@ -16,6 +16,9 @@ public class AppSettings
     // "es", "pt" or "en"
     public string Language { get; set; } = "";
 
+    // Look online for new versions
+    public bool CheckForUpdates { get; set; } = true;
+
     private static string AppFolder => AppContext.BaseDirectory;
     private static string FilePath => Path.Combine(AppFolder, "settings.json");
 
