@@ -4,7 +4,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:views="clr-namespace:FastVitae.Views"
         xmlns:storage="clr-namespace:FastVitae.Storage"
-        Title="Fast Vitae" Width="1120" Height="620" MinWidth="900" MinHeight="360"
+        Title="Fast Vitae" Width="1240" Height="620" MinWidth="900" MinHeight="360"
         WindowStartupLocation="CenterScreen">
     <DockPanel Margin="16">
         <DockPanel DockPanel.Dock="Top" Margin="0,0,0,12">
@@ -97,6 +97,7 @@
             <TabItem Header="{views:T 'Applications'}">
                 <DockPanel Margin="8">
                     <StackPanel Orientation="Horizontal" DockPanel.Dock="Top" Margin="0,0,0,10">
+                        <Button Content="{views:T 'New application'}" Style="{StaticResource Primary}" Margin="0,0,12,0" Click="NewApplication_Click"/>
                         <ComboBox x:Name="FieldFilter" Width="170" SelectionChanged="Filter_Changed" ToolTip="{views:T 'Show one Field'}"/>
                         <ComboBox x:Name="StatusFilter" ItemTemplate="{StaticResource TranslatedItem}" Width="170" Margin="8,0,0,0" SelectionChanged="Filter_Changed" ToolTip="{views:T 'Show one status'}"/>
                     </StackPanel>
@@ -133,10 +134,24 @@
                             </ListView.ItemContainerStyle>
                             <ListView.View>
                                 <GridView>
-                                    <GridViewColumn Header="{views:T 'Field'}" Width="190" DisplayMemberBinding="{Binding Field}"/>
-                                    <GridViewColumn Header="{views:T 'Company'}" Width="175" DisplayMemberBinding="{Binding Company}"/>
-                                    <GridViewColumn Header="{views:T 'Role'}" Width="175" DisplayMemberBinding="{Binding Role}"/>
-                                    <GridViewColumn Header="{views:T 'Date applied'}" Width="165" DisplayMemberBinding="{Binding DateApplied, StringFormat='{}{0:yyyy-MM-dd}'}"/>
+                                    <GridViewColumn Header="{views:T 'Field'}" Width="160" DisplayMemberBinding="{Binding Field}"/>
+                                    <GridViewColumn Header="{views:T 'Company'}" Width="150" DisplayMemberBinding="{Binding Company}"/>
+                                    <GridViewColumn Header="{views:T 'Role'}" Width="150" DisplayMemberBinding="{Binding Role}"/>
+                                    <GridViewColumn Header="{views:T 'Expected Salary'}" Width="150" DisplayMemberBinding="{Binding SalaryText}"/>
+                                    <GridViewColumn Header="{views:T 'Link'}" Width="56">
+                                        <GridViewColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <Button x:Name="LinkButton" Style="{StaticResource FolderButton}" Content="&#xE71B;" Margin="0" Click="OpenLink_Click"
+                                                        ToolTip="{Binding Link}"/>
+                                                <DataTemplate.Triggers>
+                                                    <DataTrigger Binding="{Binding Link}" Value="">
+                                                        <Setter TargetName="LinkButton" Property="Visibility" Value="Collapsed"/>
+                                                    </DataTrigger>
+                                                </DataTemplate.Triggers>
+                                            </DataTemplate>
+                                        </GridViewColumn.CellTemplate>
+                                    </GridViewColumn>
+                                    <GridViewColumn Header="{views:T 'Date applied'}" Width="130" DisplayMemberBinding="{Binding DateApplied, StringFormat='{}{0:yyyy-MM-dd}'}"/>
                                     <GridViewColumn Header="{views:T 'Status'}" Width="135">
                                         <GridViewColumn.CellTemplate>
                                             <DataTemplate>

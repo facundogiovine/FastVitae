@@ -291,6 +291,32 @@ public partial class HomeWindow : Window
         Process.Start(new ProcessStartInfo(path) { UseShellExecute = true });
     }
 
+    private void NewApplication_Click(object sender, RoutedEventArgs e)
+    {
+        var dialog = new NewApplicationWindow(store, profile) { Owner = this };
+        if (dialog.ShowDialog() != true)
+            return;
+        try
+        {
+            new ApplicationStore(store).Add(profile, dialog.Application!, dialog.SourcePdf);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            MessageBox.Show(this, Text.Get("The application could not be saved. If the Excel file is open, close it and try again.") + "\n\n" + ex.Message, "Fast Vitae");
+        }
+        RefreshApplications();
+    }
+
+    // Job post in the browser
+    private void OpenLink_Click(object sender, RoutedEventArgs e)
+    {
+        if (((FrameworkElement)sender).DataContext is not JobApplication application)
+            return;
+        string link = application.Link.Contains("://") ? application.Link : "https://" + application.Link;
+        if (Uri.TryCreate(link, UriKind.Absolute, out var uri) && (uri.Scheme == Uri.UriSchemeHttps || uri.Scheme == Uri.UriSchemeHttp))
+            Process.Start(new ProcessStartInfo(uri.AbsoluteUri) { UseShellExecute = true });
+    }
+
     // Explorer with the PDF selected
     private void ShowCvFile_Click(object sender, RoutedEventArgs e)
     {

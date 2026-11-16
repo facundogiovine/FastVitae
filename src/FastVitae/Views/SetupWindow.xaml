@@ -43,7 +43,7 @@
             </Grid.ColumnDefinitions>
             <StackPanel Grid.Column="0">
                 <TextBlock Text="{views:T 'Country code'}" Style="{StaticResource Label}"/>
-                <ComboBox Style="{StaticResource CountryCombo}" SelectedValue="{Binding Country}"/>
+                <ComboBox Style="{StaticResource CountryCombo}" views:Search.Value="{Binding Country}"/>
             </StackPanel>
             <StackPanel Grid.Column="2">
                 <TextBlock Text="{views:T 'Phone number'}" Style="{StaticResource Label}"/>

@@ -287,6 +287,29 @@ public static class Text
              "A pré-visualização e o PDF precisam do Microsoft Edge WebView2 Runtime, que não foi encontrado neste PC."),
         ["The picture could not be saved:"] = ("No se pudo guardar la foto:", "Não foi possível salvar a foto:"),
         ["CV language"] = ("Idioma del CV", "Idioma do CV"),
+        ["New application"] = ("Nueva postulación", "Nova candidatura"),
+        ["Company you are applying to:"] = ("Empresa a la que postulas:", "Empresa à qual você se candidata:"),
+        ["Expected Salary"] = ("Salario esperado", "Salário esperado"),
+        ["Link"] = ("Enlace", "Link"),
+        ["Min"] = ("Mín.", "Mín."),
+        ["Max"] = ("Máx.", "Máx."),
+        ["Salary from"] = ("Salario desde", "Salário de"),
+        ["Salary to"] = ("Salario hasta", "Salário até"),
+        ["Currency"] = ("Moneda", "Moeda"),
+        ["Type a country or a currency"] = ("Escribe un país o una moneda", "Digite um país ou uma moeda"),
+        ["The CV you are sending. A copy of its PDF is kept with this application."] =
+            ("El CV que envías. Se guarda una copia de su PDF con esta postulación.", "O CV que você envia. Uma cópia do PDF fica com esta candidatura."),
+        ["Please enter the company, the Field and the CV."] = ("Escribe la empresa, el Área y el CV.", "Digite a empresa, a Área e o CV."),
+        ["This CV has no PDF yet. Open it and click Create first."] = ("Este CV todavía no tiene PDF. Ábrelo y haz clic en Crear primero.", "Este CV ainda não tem PDF. Abra-o e clique em Criar primeiro."),
+        ["The application could not be saved. If the Excel file is open, close it and try again."] =
+            ("No se pudo guardar la postulación. Si el Excel está abierto, ciérralo y vuelve a intentarlo.", "Não foi possível salvar a candidatura. Se o Excel estiver aberto, feche e tente de novo."),
+        ["Some old files could not be moved. If a CV or the Excel file is open, close it and reopen Fast Vitae."] =
+            ("Algunos archivos antiguos no se pudieron mover. Si un CV o el Excel está abierto, ciérralo y vuelve a abrir Fast Vitae.",
+             "Alguns arquivos antigos não puderam ser movidos. Se um CV ou o Excel estiver aberto, feche e abra o Fast Vitae de novo."),
+        ["Pick a Field or type a new one, for example: Software Development, Hospitality"] =
+            ("Elige un Área o escribe una nueva, por ejemplo: Desarrollo de Software, Hotelería", "Escolha uma Área ou digite uma nova, por exemplo: Desenvolvimento de Software, Hotelaria"),
+        ["The kind of job this CV is for, for example: C# Developer"] =
+            ("El tipo de trabajo para este CV, por ejemplo: Desarrollador C#", "O tipo de trabalho deste CV, por exemplo: Desenvolvedor C#"),
         ["Update"] = ("Actualizar", "Atualizar"),
         ["There's an Update available"] = ("Hay una actualización disponible", "Há uma atualização disponível"),
         ["Updating..."] = ("Actualizando...", "Atualizando..."),

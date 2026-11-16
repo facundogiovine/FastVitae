@@ -231,3 +231,16 @@ public class ApplicationStoreTests : IDisposable
         Assert.Equal("3,000 USD", new JobApplication { SalaryMin = 3000, Currency = "USD" }.SalaryTextIn(System.Globalization.CultureInfo.InvariantCulture));
     }
 }
+
+public class AmountTests
+{
+    [Theory]
+    [InlineData("2.000", 2000)]
+    [InlineData("2,500 USD", 2500)]
+    [InlineData(" 800 ", 800)]
+    public void ParseAmount_DigitsOnly(string text, int expected) =>
+        Assert.Equal(expected, FastVitae.Views.NewApplicationWindow.ParseAmount(text));
+
+    [Fact]
+    public void ParseAmount_Empty_Null() => Assert.Null(FastVitae.Views.NewApplicationWindow.ParseAmount("a convenir"));
+}
