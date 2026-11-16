@@ -139,8 +139,6 @@
                 <DockPanel>
                     <Button x:Name="CreateButton" Content="{views:T 'Create'}" Style="{StaticResource Primary}" DockPanel.Dock="Right" Margin="0" Click="Create_Click"
                             ToolTip="{views:T 'Write the CV as PDF and Word into the company folder'}"/>
-                    <ComboBox x:Name="CvLanguageBox" Style="{StaticResource LanguageCombo}" DockPanel.Dock="Right" Margin="0,0,8,0"
-                              VerticalAlignment="Center" SelectionChanged="CvLanguage_Changed" ToolTip="{views:T 'CV language'}"/>
                     <Button x:Name="OpenFolderButton" Style="{StaticResource FolderButton}" DockPanel.Dock="Right" Margin="0,0,8,0"
                             Click="OpenFolder_Click" Visibility="Collapsed" ToolTip="{views:T 'Open in folder'}"/>
                     <Button x:Name="SaveToSpecialtyButton" Content="{views:T 'Save to Specialty'}" DockPanel.Dock="Left" Click="SaveToSpecialty_Click"
@@ -194,7 +192,10 @@
                         </StackPanel>
                     </Expander>
 
-                    <StackPanel x:Name="PicturePanel" Orientation="Horizontal" Margin="0,0,0,10">
+                    <DockPanel Margin="0,0,0,10">
+                    <ComboBox x:Name="CvLanguageBox" Style="{StaticResource LanguageCombo}" DockPanel.Dock="Right"
+                              VerticalAlignment="Center" SelectionChanged="CvLanguage_Changed" ToolTip="{views:T 'CV language'}"/>
+                    <StackPanel x:Name="PicturePanel" Orientation="Horizontal">
                         <CheckBox x:Name="PictureOption" Content="{views:T 'Picture'}" IsChecked="{Binding ShowPicture}" VerticalAlignment="Center" MinWidth="0"
                                   Click="PictureOption_Click"
                                   ToolTip="{views:T 'Name and title on the left, your picture on the right'}"/>
@@ -202,6 +203,7 @@
                         <TextBlock x:Name="NoPictureNote" Text="{views:T 'Your profile has no picture, so you will need to provide one.'}"
                                    Foreground="{StaticResource MutedTextBrush}" VerticalAlignment="Center" TextWrapping="Wrap" MaxWidth="260" Margin="12,0,0,0"/>
                     </StackPanel>
+                    </DockPanel>
 
                     <Expander Header="{views:T 'Summary'}" IsExpanded="True" Margin="0,0,0,12">
                         <TextBox views:Format.Key="Summary" Text="{Binding Summary, UpdateSourceTrigger=PropertyChanged}"
