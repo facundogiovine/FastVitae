@@ -4,6 +4,7 @@ using Xunit;
 
 namespace FastVitae.Tests;
 
+[Collection("Windows")]
 public class CloseOthersTests
 {
     // WPF windows need STA

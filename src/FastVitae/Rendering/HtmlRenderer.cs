@@ -25,7 +25,7 @@ public static class HtmlRenderer
     }
 
     // Only the CV content
-    public static string RenderBody(CvDocument doc, string? picturePath = null)
+    public static string RenderBody(CvDocument doc, string? picturePath = null, bool examples = false)
     {
         var html = new StringBuilder();
         var info = doc.BasicInfo;
@@ -59,7 +59,9 @@ public static class HtmlRenderer
                 ? ColumnsHtml(section)
                 : string.Concat(section.Entries.Select(entry => EntryHtml(doc, entry)));
 
-            // Skip empty sections
+            // Empty: example, or skip
+            if (content == "" && examples)
+                content = $"<p class=\"example\">{Text(FastVitae.Text.Get("This is an example", doc.Language))}</p>";
             if (content == "")
                 continue;
             html.Append($"<h2{Css(section.Styles, "SectionTitle")}>{Text(section.Title)}</h2>");

@@ -287,6 +287,7 @@ public static class Text
              "A pré-visualização e o PDF precisam do Microsoft Edge WebView2 Runtime, que não foi encontrado neste PC."),
         ["The picture could not be saved:"] = ("No se pudo guardar la foto:", "Não foi possível salvar a foto:"),
         ["CV language"] = ("Idioma del CV", "Idioma do CV"),
+        ["This is an example"] = ("Esto es un ejemplo", "Isto é um exemplo"),
         ["New application"] = ("Nueva postulación", "Nova candidatura"),
         ["Company you are applying to:"] = ("Empresa a la que postulas:", "Empresa à qual você se candidata:"),
         ["Expected Salary"] = ("Salario esperado", "Salário esperado"),

@@ -9,6 +9,7 @@
         WindowStartupLocation="CenterOwner" Closing="Window_Closing">
     <Window.Resources>
         <views:BulletLinesConverter x:Key="BulletLines"/>
+        <views:BulletHintConverter x:Key="BulletHint"/>
 
         <!-- Month or year dropdown -->
         <Style x:Key="DateCombo" TargetType="ComboBox" BasedOn="{StaticResource DefaultComboBoxStyle}">
@@ -67,12 +68,13 @@
             <Border Background="{StaticResource InsetBrush}" BorderBrush="{StaticResource LineBrush}" BorderThickness="1" CornerRadius="3" Padding="6" Margin="0,8,6,0">
                 <StackPanel>
                     <Button Content="✕" Style="{StaticResource Small}" HorizontalAlignment="Right" Click="RemoveColumn_Click" ToolTip="{views:T 'Remove this column'}"/>
-                    <ItemsControl ItemsSource="{Binding Entries}">
+                    <ItemsControl ItemsSource="{Binding Entries}" AlternationCount="1000">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
                                 <DockPanel Margin="0,4,0,0">
                                     <Button Content="✕" Style="{StaticResource Small}" DockPanel.Dock="Right" Click="RemoveColumnEntry_Click" ToolTip="{views:T 'Remove this bullet'}"/>
-                                    <TextBox views:Format.Key="Bullet" Text="{Binding Text, UpdateSourceTrigger=PropertyChanged}" TextWrapping="Wrap" views:Hint.Text="{views:T 'Bullet'}"/>
+                                    <TextBox views:Format.Key="Bullet" Text="{Binding Text, UpdateSourceTrigger=PropertyChanged}" TextWrapping="Wrap"
+                                             views:Hint.Text="{Binding (ItemsControl.AlternationIndex), RelativeSource={RelativeSource AncestorType=ContentPresenter}, Converter={StaticResource BulletHint}}"/>
                                 </DockPanel>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>

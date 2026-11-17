@@ -5,6 +5,7 @@ using Xunit;
 
 namespace FastVitae.Tests;
 
+[Collection("Windows")]
 public class SearchPickerTests
 {
     private static void OnSta(Action action)

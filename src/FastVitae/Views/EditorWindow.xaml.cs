@@ -139,11 +139,12 @@ public partial class EditorWindow : Window
     }
 
     // Replace CV, keep scroll
-    private async Task ShowCvInPreview()
+    // Examples only on screen
+    private async Task ShowCvInPreview(bool examples = true)
     {
         if (!previewReady)
             return;
-        string body = JsonSerializer.Serialize(HtmlRenderer.RenderBody(doc, store.PicturePath(profile)));
+        string body = JsonSerializer.Serialize(HtmlRenderer.RenderBody(doc, store.PicturePath(profile), examples));
         await Preview.ExecuteScriptAsync($"document.getElementById('page').innerHTML = {body};");
     }
 
@@ -247,10 +248,7 @@ public partial class EditorWindow : Window
 
     private void AddColumn_Click(object sender, RoutedEventArgs e)
     {
-        var section = ItemOf<Section>(sender);
-        if (section.Columns.Count >= Section.MaxColumns)
-            return;
-        section.Columns.Add(new BulletColumn());
+        ItemOf<Section>(sender).AddColumn();
         ContentChanged();
     }
 
@@ -377,7 +375,7 @@ public partial class EditorWindow : Window
 
         // Print the up-to-date preview
         previewTimer.Stop();
-        await ShowCvInPreview();
+        await ShowCvInPreview(examples: false);
 
         var settings = Preview.CoreWebView2.Environment.CreatePrintSettings();
         settings.PageWidth = 8.5;
@@ -391,6 +389,7 @@ public partial class EditorWindow : Window
 
         string pdfPath = Path.Combine(folder, fileName + ".pdf");
         bool printed = await Preview.CoreWebView2.PrintToPdfAsync(pdfPath, settings);
+        await ShowCvInPreview();
         if (!printed)
             throw new IOException(Text.Get("The PDF could not be written:") + " " + pdfPath);
         return pdfPath;

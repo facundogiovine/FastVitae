@@ -140,6 +140,18 @@ public class Section
     // SectionTitle
     public Dictionary<string, TextStyle> Styles { get; set; } = new();
 
+    // New column, one empty bullet
+    public BulletColumn AddColumn(int bullets = 1)
+    {
+        if (Columns.Count >= MaxColumns)
+            return Columns.Last();
+        var column = new BulletColumn();
+        for (int i = 0; i < bullets; i++)
+            column.Entries.Add(new ColumnEntry());
+        Columns.Add(column);
+        return column;
+    }
+
     // Old files: split into three
     [JsonPropertyName("bullets")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
@@ -195,7 +207,7 @@ public class CvDocument
         var doc = new CvDocument { BasicInfo = info, Language = language };
         doc.Styles["Dates"] = TextStyle.NewCvDates;
         var expertise = new Section { Title = Text.Get(DefaultTitles[0], language), Layout = SectionLayout.BulletColumns };
-        expertise.Columns.Add(new BulletColumn());
+        expertise.AddColumn(bullets: 3);
         doc.Sections.Add(expertise);
         foreach (string title in DefaultTitles.Skip(1))
             doc.Sections.Add(new Section { Title = Text.Get(title, language), Layout = SectionLayout.Entries });

@@ -89,3 +89,6 @@ li { margin: 0; }
 .line .right { text-align: right; white-space: nowrap; }
 .entry-name { font-weight: bold; }
 .role-title { font-weight: bold; }
+
+/* Preview-only example line */
+.example { color: #8C8C8C; font-style: italic; margin: 0 0 6pt 0; }
