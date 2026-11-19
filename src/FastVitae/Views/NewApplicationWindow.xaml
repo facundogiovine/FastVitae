@@ -14,7 +14,7 @@
                   ToolTip="{views:T 'Pick a Field or type a new one, for example: Software Development, Hospitality'}"/>
 
         <TextBlock Text="CV" Style="{StaticResource Label}"/>
-        <ComboBox x:Name="CvCombo" ToolTip="{views:T 'The CV you are sending. A copy of its PDF is kept with this application.'}"/>
+        <ComboBox x:Name="CvCombo" views:Hint.Text="{views:T 'Choose CV'}" ToolTip="{views:T 'The CV you are sending. A copy of its PDF is kept with this application.'}"/>
 
         <TextBlock Text="{views:T 'Expected Salary'}" Style="{StaticResource Label}"/>
         <Grid>

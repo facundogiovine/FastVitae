@@ -35,7 +35,7 @@ public partial class NewApplicationWindow : Window
         CvCombo.ItemsSource = field == "" ? new List<string>()
             : store.ListCvs(profile).Where(cv => !cv.Unreadable && string.Equals(cv.Field, NameCleaner.Clean(field), StringComparison.OrdinalIgnoreCase))
                 .Select(cv => cv.Role).ToList();
-        CvCombo.SelectedIndex = 0;
+        CvCombo.SelectedIndex = -1;
     }
 
     // Digits only, else null

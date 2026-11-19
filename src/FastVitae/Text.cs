@@ -300,7 +300,8 @@ public static class Text
         ["Type a country or a currency"] = ("Escribe un país o una moneda", "Digite um país ou uma moeda"),
         ["The CV you are sending. A copy of its PDF is kept with this application."] =
             ("El CV que envías. Se guarda una copia de su PDF con esta postulación.", "O CV que você envia. Uma cópia do PDF fica com esta candidatura."),
-        ["Please enter the company, the Field and the CV."] = ("Escribe la empresa, el Área y el CV.", "Digite a empresa, a Área e o CV."),
+        ["Choose CV"] = ("Elige un CV", "Escolha um CV"),
+        ["Please enter the company, the Field and the CV."] =("Escribe la empresa, el Área y el CV.", "Digite a empresa, a Área e o CV."),
         ["This CV has no PDF yet. Open it and click Create first."] = ("Este CV todavía no tiene PDF. Ábrelo y haz clic en Crear primero.", "Este CV ainda não tem PDF. Abra-o e clique em Criar primeiro."),
         ["The application could not be saved. If the Excel file is open, close it and try again."] =
             ("No se pudo guardar la postulación. Si el Excel está abierto, ciérralo y vuelve a intentarlo.", "Não foi possível salvar a candidatura. Se o Excel estiver aberto, feche e tente de novo."),
