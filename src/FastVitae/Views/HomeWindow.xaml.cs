@@ -17,6 +17,7 @@ public partial class HomeWindow : Window
     public HomeWindow(ProfileStore store, string profile)
     {
         InitializeComponent();
+        VersionText.Text = "v" + typeof(HomeWindow).Assembly.GetName().Version!.ToString(3);
         this.store = store;
         this.profile = profile;
         LanguageBox.SelectedValue = Text.Language;

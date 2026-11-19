@@ -6,6 +6,9 @@
         xmlns:storage="clr-namespace:FastVitae.Storage"
         Title="Fast Vitae" Width="1240" Height="620" MinWidth="900" MinHeight="360"
         WindowStartupLocation="CenterScreen">
+    <Grid>
+    <TextBlock x:Name="VersionText" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,16,4"
+               Foreground="{StaticResource MutedTextBrush}" FontSize="11"/>
     <DockPanel Margin="16">
         <DockPanel DockPanel.Dock="Top" Margin="0,0,0,12">
             <StackPanel Orientation="Horizontal" DockPanel.Dock="Right">
@@ -15,10 +18,9 @@
                 <Popup x:Name="UpdateBubble" PlacementTarget="{Binding ElementName=UpdateButton}" Placement="Bottom"
                        AllowsTransparency="True" StaysOpen="True" PopupAnimation="Fade">
                     <StackPanel Margin="0,4,0,0" MouseLeftButtonDown="UpdateBubble_Click" Cursor="Hand">
-                        <Path Data="M0,8 L8,0 L16,8 Z" Fill="{StaticResource CardBrush}" Stroke="#2E7D32" StrokeThickness="1"
-                              HorizontalAlignment="Left" Margin="14,0,0,-1"/>
-                        <Border Background="{StaticResource CardBrush}" BorderBrush="#2E7D32" BorderThickness="1" CornerRadius="6" Padding="12,8">
-                            <TextBlock Text="{views:T 'There\'s an Update available'}" Foreground="White"/>
+                        <Path Data="M0,8 L8,0 L16,8 Z" Fill="#2E7D32" HorizontalAlignment="Left" Margin="14,0,0,-1"/>
+                        <Border Background="#2E7D32" CornerRadius="6" Padding="12,8">
+                            <TextBlock Text="{views:T 'There\'s an Update available'}" Foreground="White" FontWeight="SemiBold"/>
                         </Border>
                     </StackPanel>
                 </Popup>
@@ -195,4 +197,5 @@
             </TabItem>
         </TabControl>
     </DockPanel>
+    </Grid>
 </Window>
