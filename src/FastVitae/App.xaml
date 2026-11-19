@@ -60,22 +60,14 @@
             <StackPanel Orientation="Horizontal">
                 <Image Source="{Binding Flag}" Width="16" Height="11" Margin="0,0,6,0" VerticalAlignment="Center"/>
                 <TextBlock Text="{Binding Symbol}" MinWidth="28" Margin="0,0,6,0"/>
-                <TextBlock x:Name="NameText" Text="{Binding Name}" Margin="0,0,8,0"/>
-                <TextBlock x:Name="CodeText" Text="{Binding Code}" Visibility="Collapsed"/>
+                <TextBlock Text="{Binding Code}"/>
             </StackPanel>
-            <DataTemplate.Triggers>
-                <!-- Closed box: flag, symbol, code -->
-                <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=ComboBoxItem}}" Value="{x:Null}">
-                    <Setter TargetName="NameText" Property="Visibility" Value="Collapsed"/>
-                    <Setter TargetName="CodeText" Property="Visibility" Value="Visible"/>
-                </DataTrigger>
-            </DataTemplate.Triggers>
         </DataTemplate>
         <Style x:Key="CurrencyCombo" TargetType="ComboBox" BasedOn="{StaticResource DefaultComboBoxStyle}">
             <Setter Property="views:Search.Kind" Value="Currency"/>
             <Setter Property="ItemTemplate" Value="{StaticResource CurrencyTemplate}"/>
             <Setter Property="MaxDropDownHeight" Value="320"/>
-            <Setter Property="Width" Value="120"/>
+            <Setter Property="Width" Value="140"/>
         </Style>
         <!-- Main button -->
         <Style x:Key="Primary" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
