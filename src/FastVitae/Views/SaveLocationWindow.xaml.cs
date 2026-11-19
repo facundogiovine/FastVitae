@@ -1,4 +1,4 @@
-using System.IO;
+﻿using System.IO;
 using System.Windows;
 using Microsoft.Win32;
 
@@ -11,7 +11,7 @@ public partial class SaveLocationWindow : Window
     {
         InitializeComponent();
         bool onlyCvs = App.Settings.CvOutputFolder != "";
-        FolderBox.Text = onlyCvs ? App.Settings.CvOutputFolder : App.Settings.FullDataFolder;
+        FolderBox.Text = onlyCvs ? App.Settings.CvOutputFolder : App.Settings.DataFolder;
         OnlyNewCvs.IsChecked = onlyCvs;
         ShowNote();
     }
@@ -67,7 +67,7 @@ public partial class SaveLocationWindow : Window
     // Move everything to the folder
     private static void MoveData(string folder)
     {
-        string current = Path.GetFullPath(App.Settings.FullDataFolder).TrimEnd('\\');
+        string current = Path.GetFullPath(App.Settings.DataFolder).TrimEnd('\\');
         if (string.Equals(folder.TrimEnd('\\'), current, StringComparison.OrdinalIgnoreCase))
             return;
 

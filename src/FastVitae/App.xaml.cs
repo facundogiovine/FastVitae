@@ -28,7 +28,7 @@ public partial class App : Application
 
         Settings = AppSettings.Load();
         Text.SetLanguage(Settings.Language != "" ? Settings.Language : Text.SystemLanguage());
-        string folder = Settings.FullDataFolder;
+        string folder = Settings.DataFolder;
         string reason = folder != "" && !Directory.Exists(folder) ? Text.Format("The data folder was not found: {0}", folder) : "";
         var info = new BasicInfo();
 
@@ -51,7 +51,7 @@ public partial class App : Application
                 Settings.SetDataFolder(setup.DataFolder);
                 Settings.Language = Text.Language;
                 Settings.Save();
-                folder = Settings.FullDataFolder;
+                folder = Settings.DataFolder;
             }
             catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or ArgumentException)
             {
@@ -80,7 +80,7 @@ public partial class App : Application
     // Open Home with current settings
     public static void ShowHome(string profile)
     {
-        var store = new ProfileStore(Settings.FullDataFolder) { CvOutputRoot = Settings.CvOutputFolder };
+        var store = new ProfileStore(Settings.DataFolder) { CvOutputRoot = Settings.CvOutputFolder };
         var old = Current.MainWindow;
         var home = new HomeWindow(store, profile);
         Current.MainWindow = home;
