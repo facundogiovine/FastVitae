@@ -100,7 +100,18 @@
                         <ItemsControl ItemsSource="{Binding Columns}" ItemTemplate="{StaticResource ColumnTemplate}">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
-                                    <UniformGrid Rows="1"/>
+                                    <UniformGrid Rows="1">
+                                        <UniformGrid.Style>
+                                            <Style TargetType="UniformGrid">
+                                                <Setter Property="Columns" Value="3"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding Columns.Count}" Value="4">
+                                                        <Setter Property="Columns" Value="4"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </UniformGrid.Style>
+                                    </UniformGrid>
                                 </ItemsPanelTemplate>
                             </ItemsControl.ItemsPanel>
                         </ItemsControl>
